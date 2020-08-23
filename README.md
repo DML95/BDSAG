@@ -9,10 +9,10 @@ Archivo de configuaracion de la base de datos
 
 | Clave | Obligatorio | Tipo | Valores | Description |
 | --- | --- | --- | --- | --- |
-| sizeDB | - [x] | Long | Mayores que 0 | Usuarios reservados en la base de datos |
-| sizeSesion | - [x] | Long | Mayores que 0 | Numero de caracteres de la sesion |
-| port | - [x] | Long | Entre 0 y 65535 | Puerto del servidor REST |
-| logs | - [x] | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
+| sizeDB | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
+| sizeSesion | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
+| port | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
+| logs | :white_check_mark: | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
 
 ###### POST [HOST]/database/session
 
@@ -23,14 +23,14 @@ Crea una sesion
 
     | Clave | Obligatorio | Tipo | Valores | Description |
     | --- | --- | --- | --- | --- |
-    | User-Agent | - [x] | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+    | User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
   - Body
 
     | Clave | Obligatorio | Tipo | Valores | Description |
     | --- | --- | --- | --- | --- |
-    | expiretime | - [x] | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
-    | value | - [x] | String |  | Valor que se le asigna a la sesion |
+    | expiretime | :white_check_mark: | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
+    | value | :white_check_mark: | String |  | Valor que se le asigna a la sesion |
 
 - Salida
   - 201 Created
@@ -58,7 +58,7 @@ Busca una sesion por un identificador
 
     | Clave | Obligatorio | Tipo | Valores | Description |
     | --- | --- | --- | --- | --- |
-    | User-Agent | - [x] | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+    | User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
 - Salida
   - 200 OK
