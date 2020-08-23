@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="BDSAG" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option platforms="Windows;Unix;" />
+				<Option output="bin/BDSAG" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-lOpenCL" />
+					<Add option="-lmicrohttpd" />
+					<Add option="-lws2_32" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option platforms="Windows;Unix;" />
+				<Option output="bin/BDSAG" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c++14" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Linker>
+			<Add option="-O3" />
+			<Add option="-static" />
+		</Linker>
+		<Unit filename="bin/config.json" />
+		<Unit filename="bin/program.cl" />
+		<Unit filename="src/apiCL.h" />
+		<Unit filename="src/apiOS.h" />
+		<Unit filename="src/apiRapidjson.h" />
+		<Unit filename="src/console/console.cpp" />
+		<Unit filename="src/console/console.h" />
+		<Unit filename="src/console/log.cpp">
+			<Option weight="100" />
+		</Unit>
+		<Unit filename="src/console/log.h" />
+		<Unit filename="src/core/abstractServer.cpp" />
+		<Unit filename="src/core/abstractServer.h" />
+		<Unit filename="src/core/db.cpp" />
+		<Unit filename="src/core/db.h" />
+		<Unit filename="src/core/openCL.cpp" />
+		<Unit filename="src/core/openCL.h" />
+		<Unit filename="src/core/restServer.cpp" />
+		<Unit filename="src/core/restServer.h" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/utils/config.cpp" />
+		<Unit filename="src/utils/config.h" />
+		<Unit filename="src/utils/exception.cpp" />
+		<Unit filename="src/utils/exception.h" />
+		<Unit filename="src/utils/nullBuffer.cpp" />
+		<Unit filename="src/utils/nullBuffer.h" />
+		<Unit filename="src/utils/semaphore.cpp" />
+		<Unit filename="src/utils/semaphore.h" />
+		<Unit filename="src/utils/utils.cpp" />
+		<Unit filename="src/utils/utils.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
