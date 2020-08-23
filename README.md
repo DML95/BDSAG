@@ -62,11 +62,12 @@ Busca una sesion por un identificador
 
 - Salida
   - 200 OK
-
-    | Clave | Tipo | Valores | Description |
-	| --- | --- | --- | --- |
-    | value | String |  | Valor de la sesion |
-    | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+    - Body
+	
+      | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | value | String |  | Valor de la sesion |
+      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
   
   - 404 Not Found
 
