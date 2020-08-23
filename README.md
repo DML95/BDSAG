@@ -51,7 +51,7 @@ Busca una sesion por un identificador
   - Path
   
     | Clave | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
+    | --- | --- | --- | --- |
     | id | String |  | Identificador de la sesion |
   
   - Header
