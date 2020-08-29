@@ -65,12 +65,12 @@ size_t Utils::getRandom(size_t max){
 
 std::string Utils::getRandom(std::string chars,size_t size){
     Log::getLog(Log::trace,INFO_LOG)<<"Opteniendo un string aleatorio"<<std::endl;
-    std::string out;
+    std::string out(size,0);
     size_t sizeChars=chars.size()-1;
     if(0>sizeChars)throw Exception(0,"Longitud de chars invalida",INFO_LOG);
     std::uniform_int_distribution<std::mt19937::result_type> random(0,sizeChars);
-    for(size_t cont=0;cont<size;cont++){
-        out.push_back(chars[random(Utils::rng)]);
+    for(char &car:out){
+        car=chars[random(Utils::rng)];
     }
     return out;
 }

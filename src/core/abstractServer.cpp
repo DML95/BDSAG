@@ -21,23 +21,13 @@ int AbstractServer::createResponse(struct MHD_Connection* connection,AbstractSer
     return ret;
 }
 
-int AbstractServer::addQuery(void *cls, enum MHD_ValueKind kind, const char *key, const char *value){
+int AbstractServer::addKeyValue(void *cls,MHD_ValueKind kind, const char *key, const char *value) noexcept{
     std::unordered_map<std::string,std::string> *query=(std::unordered_map<std::string,std::string>*)cls;
     std::string strKey(key);
     std::string strValue;
     if(value)strValue=std::string(value);
-    Log::getLog(Log::trace,INFO_LOG)<<"[Peticion] Consulta: ["<<strKey<<": "<<strValue<<']'<<std::endl;
     query->insert({strKey,strValue});
-    return MHD_YES;
-}
-
-int AbstractServer::addHeader(void *cls, enum MHD_ValueKind kind, const char *key, const char *value){
-    std::unordered_map<std::string,std::string> *query=(std::unordered_map<std::string,std::string>*)cls;
-    std::string strKey(key);
-    std::string strValue;
-    if(value)strValue=std::string(value);
-    Log::getLog(Log::trace,INFO_LOG)<<"[Peticion] Cabecera: ["<<strKey<<": "<<strValue<<']'<<std::endl;
-    query->insert({strKey,strValue});
+    Log::getLog(Log::trace,INFO_LOG)<<"[Peticion] Agegado: ["<<strKey<<": "<<strValue<<']'<<std::endl;
     return MHD_YES;
 }
 
@@ -68,8 +58,10 @@ int AbstractServer::internalConnection(void* cls, struct MHD_Connection* connect
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Metodo: "<<request.method<<std::endl;
         request.url=std::string(url);
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] URL: "<<request.url<<std::endl;
-        MHD_get_connection_values(connection,MHD_GET_ARGUMENT_KIND,AbstractServer::addQuery,&request.querys);
-        MHD_get_connection_values(connection,MHD_HEADER_KIND,AbstractServer::addHeader,&request.headers);
+        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agegegando consultas"<<std::endl;
+        MHD_get_connection_values(connection,MHD_GET_ARGUMENT_KIND,AbstractServer::addKeyValue,&request.querys);
+        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agegegando cabeceras"<<std::endl;
+        MHD_get_connection_values(connection,MHD_HEADER_KIND,AbstractServer::addKeyValue,&request.headers);
         request.body=infoBodyRequest->body;
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Cuerpo: "<<request.body<<std::endl;
         try{
@@ -102,5 +94,5 @@ AbstractServer::AbstractServer(unsigned short port){
 
 AbstractServer::~AbstractServer(){
     Log::getLog(Log::info,this,INFO_LOG)<<"Cerrando servidor HTTP abstracto"<<std::endl;
-    MHD_stop_daemon(this->server);
+    MHD_stop_daemon((MHD_Daemon*)this->server);
 }

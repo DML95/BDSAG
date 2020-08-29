@@ -10,7 +10,7 @@
 #include"../apiOS.h"
 
 std::vector<DB::internalData> DB::datas;
-std::vector<OpenCL::infoDevice> DB::infoDevices=OpenCL::getInfoDevices();
+std::vector<OpenCL> &DB::openCl=OpenCL::getDevices();
 //caracteres de base64 para URL
 std::string DB::chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
@@ -26,15 +26,16 @@ DB::StaticClass::StaticClass(){
 }
 
 DB::pointerDevice DB::pointerToPointerDevice(size_t pointer){
-    DB::pointerDevice pointerDevice={-1,0};
+    DB::pointerDevice pointerDevice={NULL,0};
     if(pointer<=DB::datas.size()){
-        for(OpenCL::infoDevice &infoDevice:DB::infoDevices){
-            if(pointer<infoDevice.size){
-                pointerDevice.id=infoDevice.id;
+        for(OpenCL &device:DB::openCl){
+            size_t size=device.getSizeBufers();
+            if(pointer<size){
+                pointerDevice.device=&device;
                 pointerDevice.pointer=pointer;
                 break;
             }
-            pointer-=infoDevice.size;
+            pointer-=size;
         }
     }
     return pointerDevice;
@@ -43,12 +44,12 @@ DB::pointerDevice DB::pointerToPointerDevice(size_t pointer){
 size_t DB::pointerDeviceToPointer(DB::pointerDevice &pointerDevice){
     size_t pointer=std::numeric_limits<size_t>::max();
     size_t cont=0;
-    for(OpenCL::infoDevice &infoDevice:DB::infoDevices){
-        if(infoDevice.id==pointerDevice.id){
+    for(OpenCL &device:DB::openCl){
+        if(device==*pointerDevice.device){
             pointer=cont+pointerDevice.pointer;
             break;
         }
-        cont+=infoDevice.size;
+        cont+=device.getSizeBufers();
     }
     return pointer;
 }
@@ -58,7 +59,7 @@ DB::pointerDevice DB::getAndUpdatePostionTime(size_t expireTime,DB::status &stat
     status=DB::ok;
     size_t epoch=Utils::getEpoch();
     bool run;
-    std::set<int> excludeDevice;
+    std::set<OpenCL*> excludeDevice;
     DB::pointerDevice pointerDevice;
     do{
         //se busca un dispostivo que no este lleno
@@ -66,12 +67,12 @@ DB::pointerDevice DB::getAndUpdatePostionTime(size_t expireTime,DB::status &stat
             //para mantener la proporcionalidad de la reparticion de datos entre los dispostivos
             //se asigna un puntero aleatorio y se calcula a que dispostivo pertenece
             pointerDevice=DB::pointerToPointerDevice(Utils::getRandom(DB::datas.size()-1));
-        }while(excludeDevice.find(pointerDevice.id)!=excludeDevice.end());
-        OpenCL::getPostionExpireTime(pointerDevice.id,pointerDevice.pointer,epoch,expireTime).wait();
+        }while(excludeDevice.find(pointerDevice.device)!=excludeDevice.end());
+        pointerDevice.device->getPostionExpireTime(pointerDevice.pointer,epoch,expireTime).wait();
         run=std::numeric_limits<size_t>::max()==pointerDevice.pointer;
         if(run){
-            excludeDevice.insert(pointerDevice.id);
-            if(excludeDevice.size()>=DB::infoDevices.size()){
+            excludeDevice.insert(pointerDevice.device);
+            if(excludeDevice.size()>=DB::openCl.size()){
                 Log::getLog(Log::info,INFO_LOG)<<"No se ha podido encontrar ningun tiempo libre"<<std::endl;
                 status=DB::dbFull;
             }
@@ -80,6 +81,7 @@ DB::pointerDevice DB::getAndUpdatePostionTime(size_t expireTime,DB::status &stat
     pointerDevice.value=epoch+expireTime;
     return pointerDevice;
 }
+
 
 TYPE_BUFFER DB::getHash(std::string &string){
     TYPE_BUFFER hash=0xaaaaaaaaaaaaaaaa;
@@ -90,11 +92,83 @@ TYPE_BUFFER DB::getHash(std::string &string){
     return hash;
 }
 
-size_t DB::getEstimatedSizeBuffer(OpenCL::infoDevice &infoDevice){
-    size_t size=infoDevice.size*sizeof(TYPE_BUFFER);
+size_t DB::getEstimatedSizeBuffer(OpenCL &device){
+    size_t size=device.getSizeBufers()*sizeof(TYPE_BUFFER);
     size>>=11;
     if(size<0x100)size=0x100;
     return size;
+}
+
+DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data){
+    Log::getLog(Log::debug,INFO_LOG)<<"Buscando una sesion\n\tSesion: "<<data.session<<
+            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+    size_t epoch=Utils::getEpoch();
+    DB::status status=DB::sessionNotFound;
+    std::string sessionExtended=data.session+data.userAgent;
+    TYPE_BUFFER hash=DB::getHash(sessionExtended);
+    std::vector<DB::dataDevice> dataDevices(DB::openCl.size());
+    size_t cont=0;
+    //enviamos intrucciones de busqueda a todos los dispostivos
+    for(OpenCL &device:DB::openCl){
+        DB::dataDevice &dataDevice=dataDevices[cont++];
+        size_t size=DB::getEstimatedSizeBuffer(device);
+        dataDevice.buffer=device.createBuffer(size);
+        dataDevice.events={
+            device.getPostionsHash(dataDevice.buffer,hash)
+        };
+        const cl::CommandQueue &commandQueue=device.getCommandQueue();
+        dataDevice.structPostionsMap=(DB::structPostions*)commandQueue.enqueueMapBuffer(
+                dataDevice.buffer,CL_FALSE,CL_MAP_READ,0,size,&dataDevice.events,&dataDevice.events[0]);
+        commandQueue.flush();
+    }
+    //comprobamos si alguna busqueda es correcta
+    cont=0;
+    //recoremos los dispositivos
+    for(OpenCL &device:DB::openCl){
+        DB::dataDevice &dataDevice=dataDevices[cont++];
+        //continuamos si no se ha encontrado una sesion
+        if(status==DB::sessionNotFound){
+            cl::Event::waitForEvents(dataDevice.events);
+            size_t size=dataDevice.structPostionsMap->cont;
+            //recorremos el buffer de salida
+            for(size_t contMap=0;contMap<size;contMap++){
+                size_t postionDevice=dataDevice.structPostionsMap->postions[contMap];
+                DB::pointerDevice pointerDevice={
+                    &device,
+                    postionDevice
+                };
+                size_t pointer=DB::pointerDeviceToPointer(pointerDevice);
+                DB::internalData &internalData=DB::datas[pointer];
+                if(sessionCallBack(pointerDevice,internalData,data,sessionExtended,epoch)){
+                    status=DB::ok;
+                }
+            }
+        }
+        //se cierra el map
+        device.getCommandQueue().enqueueUnmapMemObject(dataDevice.buffer,dataDevice.structPostionsMap);
+    }
+    return status;
+}
+
+bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
+    Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
+    bool check=false;
+    internalData.mutex.lock();
+        TYPE_BUFFER time;
+        std::vector<cl::Event> events;//no se usa
+        pointerDevice.device->getExpireTime(time,pointerDevice.pointer,events).wait();
+        //se comprueba que la sesion haya expirado y sea valida
+        if(internalData.expireTime>epoch&&
+                time==internalData.expireTime&&
+                internalData.session==sessionExtended){
+            //se devuelven los valores de la sesion
+            data.value=internalData.value;
+            data.expireTime=internalData.expireTime;
+            check=true;
+        }
+    internalData.mutex.unlock();
+    Log::getLog(Log::debug,INFO_LOG)<<"Sesion valida: "<<check<<std::endl;
+    return check;
 }
 
 DB::status DB::createSession(DB::data &data){
@@ -112,7 +186,7 @@ DB::status DB::createSession(DB::data &data){
         DB::internalData &internalData=DB::datas[pointer];
         internalData.mutex.lock();
             std::vector<cl::Event> events={
-                OpenCL::setPostionHash(pointerDevice.id,hash,pointerDevice.pointer,events)
+                pointerDevice.device->setPostionHash(hash,pointerDevice.pointer,events)
             };
             internalData.value=data.value;
             internalData.session=sesionExtended;
@@ -125,62 +199,7 @@ DB::status DB::createSession(DB::data &data){
 }
 
 DB::status DB::getSession(DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Creando una sesion\n\tSesion: "<<data.session<<
+    Log::getLog(Log::debug,INFO_LOG)<<"Opteniedo una sesion\n\tSesion: "<<data.session<<
             "\n\tUserAgent: "<<data.userAgent<<std::endl;
-    size_t epoch=Utils::getEpoch();
-    DB::status status=DB::sessionNotFound;
-    std::string sessionExtended=data.session+data.userAgent;
-    TYPE_BUFFER hash=DB::getHash(sessionExtended);
-    std::vector<DB::dataDevice> dataDevices(DB::infoDevices.size());
-    size_t cont=0;
-    //enviamos intrucciones de busqueda a todos los dispostivos
-    for(OpenCL::infoDevice &infoDevice:DB::infoDevices){
-        DB::dataDevice &dataDevice=dataDevices[cont++];
-        size_t size=DB::getEstimatedSizeBuffer(infoDevice);
-        dataDevice.buffer=OpenCL::createBuffer(infoDevice.id,size);
-        dataDevice.events={
-            OpenCL::getPostionsHash(infoDevice.id,dataDevice.buffer,hash)
-        };
-        dataDevice.structPostionsMap=(DB::structPostions*)infoDevice.commandQueue.enqueueMapBuffer(
-                dataDevice.buffer,CL_FALSE,CL_MAP_READ,0,size,&dataDevice.events,&dataDevice.events[0]);
-        infoDevice.commandQueue.flush();
-    }
-    //comprobamos si alguna busqueda es correcta
-    cont=0;
-    //recoremos los dispositivos
-    for(OpenCL::infoDevice &infoDevice:DB::infoDevices){
-        DB::dataDevice &dataDevice=dataDevices[cont++];
-        //continuamos si no se ha encontrado una sesion
-        if(status==DB::sessionNotFound){
-            cl::Event::waitForEvents(dataDevice.events);
-            size_t size=dataDevice.structPostionsMap->cont;
-            //recorremos el buffer de salida
-            for(size_t contMap=0;contMap<size;contMap++){
-                size_t postionDevice=dataDevice.structPostionsMap->postions[contMap];
-                DB::pointerDevice pointerDevice={
-                    infoDevice.id,
-                    postionDevice
-                };
-                size_t pointer=DB::pointerDeviceToPointer(pointerDevice);
-                DB::internalData &internalData=DB::datas[pointer];
-                internalData.mutex.lock();
-                    TYPE_BUFFER time;
-                    std::vector<cl::Event> events;//no se usa
-                    OpenCL::getExpireTime(infoDevice.id,time,postionDevice,events).wait();
-                    //se comprueba que la sesion haya expirado y sea valida
-                    if(internalData.expireTime>epoch&&
-                            time==internalData.expireTime&&
-                            internalData.session==sessionExtended){
-                        //se devuelven los valores de la sesion
-                        data.value=internalData.value;
-                        data.expireTime=internalData.expireTime;
-                        status=DB::ok;
-                    }
-                internalData.mutex.unlock();
-            }
-        }
-        //se cierra el map
-        infoDevice.commandQueue.enqueueUnmapMemObject(dataDevice.buffer,dataDevice.structPostionsMap);
-    }
-    return status;
+    return DB::findSession(DB::checkAndGetSession,data);
 }

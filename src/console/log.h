@@ -32,6 +32,7 @@
             static NullBuffer nullBuffer;
             static std::ostream nullStream;
 
+            //devuelve un ostream dependiedo del tipo de log
             static std::ostream& getOstream(Log::type type);
         public:
             //establece el nivel maximo a mostrar

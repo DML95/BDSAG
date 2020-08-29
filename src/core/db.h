@@ -28,7 +28,7 @@
             }internalData;
 
             typedef struct{
-                int id;
+                OpenCL *device;
                 size_t pointer;
                 TYPE_BUFFER value;
             }pointerDevice;
@@ -46,7 +46,7 @@
             }dataDevice;
 
             static std::vector<DB::internalData> datas;
-            static std::vector<OpenCL::infoDevice> infoDevices;
+            static std::vector<OpenCL> &openCl;
             static std::string chars;
 
             //clase estatica
@@ -57,6 +57,7 @@
 
             static StaticClass staticClass;
 
+
             //calcula a que dispositivo y posicion le pertenece un puntero
             static DB::pointerDevice pointerToPointerDevice(size_t pointer);
             //calcula a que puntero le pertenece un dispositivo y posicion
@@ -66,11 +67,16 @@
             //obtiene un hash a partir de una cadena
             static TYPE_BUFFER getHash(std::string &string);
             //devuelve un tamaño estimado para evitar desbordamientos para el buffer
-            static size_t getEstimatedSizeBuffer(OpenCL::infoDevice &infoDevice);
+            static size_t getEstimatedSizeBuffer(OpenCL &device);
+            //busca una sesion por su hash y llama a una funcion cuando encuentra coincidencias
+            //si se repite el hash se llama varias veces
+            static DB::status findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data);
+            //chequea si la sesion es correcta y la devuelve en caso afirmativo
+            static bool checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
         public:
             //crea una sesion en la BD
             static DB::status createSession(DB::data &data);
-            //busca una sesion en la BD
+            //devuelve una sesion en la BD
             static DB::status getSession(DB::data &data);
     };
 

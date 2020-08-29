@@ -1,6 +1,8 @@
 #ifndef APIRAPIDJSON_H_INCLUDED
 #define APIRAPIDJSON_H_INCLUDED
 
+    //configuracion de rapidjson
+
     #include"utils/exception.h"
 
     //todos los procesadores x86_64 tienen SSE2

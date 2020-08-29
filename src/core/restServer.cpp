@@ -6,28 +6,21 @@
 #include"db.h"
 #include"../utils/utils.h"
 
-std::vector<std::string> RESTServer::urlToNodes(std::string url){
-    int cont=0;
-    char car=url[cont++];
+std::vector<std::string> RESTServer::urlToNodes(std::string &url){
+    size_t postion=0;
+    size_t postionTemp=0;
+    bool run;
+    char car=url[postion++];
     if(car!='/')throw Exception(0,"Error en el formato de la URL",this,INFO_LOG);
     std::vector<std::string> nodes;
-    std::string value;
     do{
-        car=url[cont++];
-        switch(car){
-            case '/':
-                Log::getLog(Log::trace,this,INFO_LOG)<<"Agregando nodo: "<<value<<std::endl;
-                nodes.push_back(value);
-                value.clear();
-                break;
-            case '\0':
-                break;
-            default:
-                value+=car;
-        }
-    }while(car!='\0');
-    Log::getLog(Log::trace,this,INFO_LOG)<<"Agregando nodo: "<<value<<std::endl;
-    nodes.push_back(value);
+        size_t postionTemp=url.find_first_of('/',postion);
+        std::string value=url.substr(postion,postionTemp-postion);
+        Log::getLog(Log::trace,this,INFO_LOG)<<"Agregando nodo: "<<value<<std::endl;
+        nodes.push_back(value);
+        postion=postionTemp+1;
+        run=postionTemp!=std::string::npos;
+    }while(run);
     return nodes;
 }
 
@@ -154,3 +147,4 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
     }
     return true;
 }
+

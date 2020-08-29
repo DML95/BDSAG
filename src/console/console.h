@@ -10,7 +10,7 @@
             static std::atomic<Console::event> function;
             struct plataformFunctions;
         public:
-
+            //establce el evento de cierre de la consola
             static void setCloseEvent(Console::event function);
     };
 
