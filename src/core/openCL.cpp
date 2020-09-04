@@ -202,16 +202,18 @@ cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl
     return internalEvents[0];
 }
 
-cl::Event OpenCL::setExpireTime(TYPE_BUFFER time,size_t position,std::vector<cl::Event> &events){
+cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> &events){
     Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo un tiempo en la posicion: "<<position<<std::endl;
-    cl::Buffer value=this->createBuffer(sizeof(TYPE_BUFFER));
-    cl::Kernel kernel(this->program,"setExpireTime");
+    cl::Buffer checkTimeBuffer=this->createBuffer(sizeof(TYPE_BUFFER));
+    std::vector<cl::Event> internalEvents(1);
+    this->commandQueue.enqueueWriteBuffer(checkTimeBuffer,CL_FALSE,0,sizeof(TYPE_BUFFER),&checkTime,&events,&internalEvents[0]);
+    cl::Kernel kernel(this->program,"checkAndSetExpireTime");
     kernel.setArg(0,this->time);
     kernel.setArg(1,position);
-    kernel.setArg(2,time);
-    std::vector<cl::Event> internalEvents(1);
-    this->commandQueue.enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(1),cl::NullRange,&events,&internalEvents[0]);
-    this->commandQueue.enqueueReadBuffer(value,CL_FALSE,0,sizeof(TYPE_BUFFER),&time,&internalEvents,&internalEvents[0]);
+    kernel.setArg(2,checkTimeBuffer);
+    kernel.setArg(3,oldTime);
+    this->commandQueue.enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(1),cl::NullRange,&internalEvents,&internalEvents[0]);
+    this->commandQueue.enqueueReadBuffer(checkTimeBuffer,CL_FALSE,0,sizeof(TYPE_BUFFER),&checkTime,&internalEvents,&internalEvents[0]);
     return internalEvents[0];
 }
 

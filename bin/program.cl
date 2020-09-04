@@ -35,14 +35,19 @@ __kernel void getExpireTime(__global size_host_t *value,
     atomic_xchg(&timeBuffer[position],time);    //UnLock
 }
 
-__kernel void setExpireTime(__global unsigned long *timeBuffer,
+__kernel void checkAndSetExpireTime(__global unsigned long *timeBuffer,
         size_host_t position,
-        size_host_t value){
+        __global size_host_t *checkTime,
+        size_host_t oldValue){
     size_host_t time;
     do{
         time=atomic_xchg(&timeBuffer[position],MAX_SIZE_HOST);
     }while(time==MAX_SIZE_HOST);    //Lock
-    time=value;
+    bool check=time==oldValue;
+    if(check){
+        time=*checkTime;
+    }
+    *checkTime=check;
     atomic_xchg(&timeBuffer[position],time);    //UnLock
 }
 

@@ -71,6 +71,34 @@ Busca una sesion por un identificador
   
   - 404 Not Found
 
+###### DELETE [HOST]/database/session/{id}
+
+Elimina una sesion por un identificador
+
+- Entrada
+  - Path
+  
+    | Clave | Tipo | Valores | Description |
+    | --- | --- | --- | --- |
+    | id | String |  | Identificador de la sesion |
+  
+  - Header
+
+    | Clave | Obligatorio | Tipo | Valores | Description |
+    | --- | --- | --- | --- | --- |
+    | User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+
+- Salida
+  - 200 OK
+    - Body
+	
+      | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | value | String |  | Valor de la sesion |
+      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+  
+  - 404 Not Found
+
 ###### Entorno de desarrollo
 
 * Copilador -> GCC (mingw-w64)

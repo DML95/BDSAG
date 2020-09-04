@@ -73,11 +73,15 @@
             static DB::status findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data);
             //chequea si la sesion es correcta y la devuelve en caso afirmativo
             static bool checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
+            //chequea si la sesion es correcta y la elimina en caso afirmativo
+            static bool checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
         public:
             //crea una sesion en la BD
             static DB::status createSession(DB::data &data);
             //devuelve una sesion en la BD
             static DB::status getSession(DB::data &data);
+            //elimina una sesion de la BD
+            static DB::status deleteSession(DB::data &data);
     };
 
 #endif // DB_H_INCLUDED

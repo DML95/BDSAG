@@ -14,7 +14,7 @@ std::vector<std::string> RESTServer::urlToNodes(std::string &url){
     if(car!='/')throw Exception(0,"Error en el formato de la URL",this,INFO_LOG);
     std::vector<std::string> nodes;
     do{
-        size_t postionTemp=url.find_first_of('/',postion);
+        postionTemp=url.find_first_of('/',postion);
         std::string value=url.substr(postion,postionTemp-postion);
         Log::getLog(Log::trace,this,INFO_LOG)<<"Agregando nodo: "<<value<<std::endl;
         nodes.push_back(value);
@@ -99,6 +99,29 @@ int RESTServer::databaseSessionGET(rapidjson::Document &response,std::string &id
     return 200;
 }
 
+int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string &id,std::unordered_map<std::string,std::string> &headers){
+    Log::getLog(Log::debug,this,INFO_LOG)<<"DELETE /database/session/{id}"<<std::endl;
+    std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
+    if(headerIterator==headers.end()){
+        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+        RESTServer::createMessageError(response,"header: User-Agent");
+        return 400;
+    }
+    DB::data data;
+    data.userAgent=headerIterator->second;
+    data.session=id;
+    switch(DB::deleteSession(data)){
+        case DB::sessionNotFound:
+            Log::getLog(Log::warn,this,INFO_LOG)<<"sesion no encontrada"<<std::endl;
+            return 404;
+    }
+    auto &allocator=response.GetAllocator();
+    response.SetObject();
+    response.AddMember("value",data.value,allocator);
+    response.AddMember("expireepoch",data.expireTime,allocator);
+    return 200;
+}
+
 RESTServer::RESTServer():
         AbstractServer(Config::getPort()){
     Log::getLog(Log::info,this,INFO_LOG)<<"Iniciando servidor REST"<<std::endl;
@@ -134,6 +157,12 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                     if(request.method=="GET"){
                         rapidjson::Document responseDoc;
                         response.code=databaseSessionGET(responseDoc,nodes[2],request.headers);
+                        if(responseDoc.IsObject()){
+                            response.body=RESTServer::documentToString(responseDoc);
+                        }
+                    }else if(request.method=="DELETE"){
+                        rapidjson::Document responseDoc;
+                        response.code=databaseSessionDELETE(responseDoc,nodes[2],request.headers);
                         if(responseDoc.IsObject()){
                             response.body=RESTServer::documentToString(responseDoc);
                         }
