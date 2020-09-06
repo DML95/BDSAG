@@ -189,7 +189,7 @@ cl::Event OpenCL::getPostionExpireTime(size_t &position,size_t epoch,size_t expi
     return events[0];
 }
 
-cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl::Event> &events){
+cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl::Event> *events){
     Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Opteniendo un tiempo en la posicion: "<<position<<std::endl;
     cl::Buffer value=this->createBuffer(sizeof(TYPE_BUFFER));
     cl::Kernel kernel(this->program,"getExpireTime");
@@ -197,16 +197,16 @@ cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl
     kernel.setArg(1,this->time);
     kernel.setArg(2,position);
     std::vector<cl::Event> internalEvents(1);
-    this->commandQueue.enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(1),cl::NullRange,&events,&internalEvents[0]);
+    this->commandQueue.enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(1),cl::NullRange,events,&internalEvents[0]);
     this->commandQueue.enqueueReadBuffer(value,CL_FALSE,0,sizeof(TYPE_BUFFER),&time,&internalEvents,&internalEvents[0]);
     return internalEvents[0];
 }
 
-cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> &events){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo un tiempo en la posicion: "<<position<<std::endl;
+cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> *events){
+    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo un tiempo("<<checkTime<<") en la posicion: "<<position<<std::endl;
     cl::Buffer checkTimeBuffer=this->createBuffer(sizeof(TYPE_BUFFER));
     std::vector<cl::Event> internalEvents(1);
-    this->commandQueue.enqueueWriteBuffer(checkTimeBuffer,CL_FALSE,0,sizeof(TYPE_BUFFER),&checkTime,&events,&internalEvents[0]);
+    this->commandQueue.enqueueWriteBuffer(checkTimeBuffer,CL_FALSE,0,sizeof(TYPE_BUFFER),&checkTime,events,&internalEvents[0]);
     cl::Kernel kernel(this->program,"checkAndSetExpireTime");
     kernel.setArg(0,this->time);
     kernel.setArg(1,position);
@@ -217,10 +217,10 @@ cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTi
     return internalEvents[0];
 }
 
-cl::Event OpenCL::setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> &events){
+cl::Event OpenCL::setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> *events){
     Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo el hash("<<hash<<") en la posicion: "<<position<<std::endl;
     cl::Event event;
-    this->commandQueue.enqueueWriteBuffer(this->hash,CL_FALSE,sizeof(TYPE_BUFFER)*position,sizeof(TYPE_BUFFER),&hash,&events,&event);
+    this->commandQueue.enqueueWriteBuffer(this->hash,CL_FALSE,sizeof(TYPE_BUFFER)*position,sizeof(TYPE_BUFFER),&hash,events,&event);
     return event;
 }
 

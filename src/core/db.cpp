@@ -155,8 +155,7 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
     bool check=false;
     internalData.mutex.lock();
         TYPE_BUFFER time;
-        std::vector<cl::Event> events;//no se usa
-        pointerDevice.device->getExpireTime(time,pointerDevice.pointer,events).wait();
+        pointerDevice.device->getExpireTime(time,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
         if(internalData.expireTime>epoch&&
                 time==internalData.expireTime&&
@@ -171,13 +170,47 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
     return check;
 }
 
+bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
+    Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
+    bool check=false;
+    internalData.mutex.lock();
+        TYPE_BUFFER checkTime;
+        pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
+        //se comprueba que la sesion haya expirado y sea valida
+        if(internalData.expireTime>epoch&&
+                checkTime==internalData.expireTime&&
+                internalData.session==sessionExtended){
+            //se actualiza el tiempo de la sesion si se requere
+            check=true;
+            TYPE_BUFFER expireTime;
+            if(data.updateExpireTime){
+                expireTime=checkTime=epoch+data.expireTime;
+                pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
+            }
+            check=checkTime;
+            if(check){
+                if(data.updateExpireTime){
+                    data.expireTime=internalData.expireTime=expireTime;
+                }
+                //se actualiza el valor de la sesion o se devuelve el antiguo valor
+                if(data.updateValue){
+                    internalData.value=data.value;
+                }else{
+                    data.value=internalData.value;
+                }
+            }
+        }
+    internalData.mutex.unlock();
+    Log::getLog(Log::debug,INFO_LOG)<<"Sesion modificada: "<<check<<std::endl;
+    return check;
+}
+
 bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
     Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
     bool check=false;
     internalData.mutex.lock();
         TYPE_BUFFER checkTime;
-        std::vector<cl::Event> events;//no se usa
-        pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer,events).wait();
+        pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
         if(internalData.expireTime>epoch&&
                 checkTime==internalData.expireTime&&
@@ -185,8 +218,9 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
             //se devuelven los valores de la sesion
             data.value=internalData.value;
             data.expireTime=internalData.expireTime;
+            //se pone a 0 el tiempo de la sesion
             checkTime=0;
-            pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer,events).wait();
+            pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
             check=checkTime;
         }
     internalData.mutex.unlock();
@@ -209,7 +243,7 @@ DB::status DB::createSession(DB::data &data){
         DB::internalData &internalData=DB::datas[pointer];
         internalData.mutex.lock();
             std::vector<cl::Event> events={
-                pointerDevice.device->setPostionHash(hash,pointerDevice.pointer,events)
+                pointerDevice.device->setPostionHash(hash,pointerDevice.pointer)
             };
             internalData.value=data.value;
             internalData.session=sesionExtended;
@@ -225,6 +259,12 @@ DB::status DB::getSession(DB::data &data){
     Log::getLog(Log::debug,INFO_LOG)<<"Opteniedo una sesion\n\tSesion: "<<data.session<<
             "\n\tUserAgent: "<<data.userAgent<<std::endl;
     return DB::findSession(DB::checkAndGetSession,data);
+}
+
+DB::status DB::patchSession(DB::data &data){
+    Log::getLog(Log::debug,INFO_LOG)<<"Modificando una sesion\n\tSesion: "<<data.session<<
+            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+    return DB::findSession(DB::checkAndPatchSession,data);
 }
 
 DB::status DB::deleteSession(DB::data &data){

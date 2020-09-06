@@ -58,9 +58,9 @@ int AbstractServer::internalConnection(void* cls, struct MHD_Connection* connect
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Metodo: "<<request.method<<std::endl;
         request.url=std::string(url);
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] URL: "<<request.url<<std::endl;
-        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agegegando consultas"<<std::endl;
+        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agregando consultas"<<std::endl;
         MHD_get_connection_values(connection,MHD_GET_ARGUMENT_KIND,AbstractServer::addKeyValue,&request.querys);
-        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agegegando cabeceras"<<std::endl;
+        Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Agregando cabeceras"<<std::endl;
         MHD_get_connection_values(connection,MHD_HEADER_KIND,AbstractServer::addKeyValue,&request.headers);
         request.body=infoBodyRequest->body;
         Log::getLog(Log::debug,abstractServer,INFO_LOG)<<"[Peticion] Cuerpo: "<<request.body<<std::endl;

@@ -8,7 +8,9 @@
             typedef struct{
                 std::string session;
                 std::string userAgent;
+                bool updateValue;
                 std::string value;
+                bool updateExpireTime;
                 size_t expireTime;
             }data;
 
@@ -73,6 +75,8 @@
             static DB::status findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data);
             //chequea si la sesion es correcta y la devuelve en caso afirmativo
             static bool checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
+            //chequea si la sesion es correcta y la modifica en caso afirmativo
+            static bool checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
             //chequea si la sesion es correcta y la elimina en caso afirmativo
             static bool checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch);
         public:
@@ -80,6 +84,8 @@
             static DB::status createSession(DB::data &data);
             //devuelve una sesion en la BD
             static DB::status getSession(DB::data &data);
+            //modifica una sesion en la BD
+            static DB::status patchSession(DB::data &data);
             //elimina una sesion de la BD
             static DB::status deleteSession(DB::data &data);
     };

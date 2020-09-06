@@ -99,6 +99,52 @@ int RESTServer::databaseSessionGET(rapidjson::Document &response,std::string &id
     return 200;
 }
 
+int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Document &request,std::string &id,std::unordered_map<std::string,std::string> &headers){
+    Log::getLog(Log::debug,this,INFO_LOG)<<"PATCH /database/session"<<std::endl;
+    std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
+    if(headerIterator==headers.end()){
+        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+        RESTServer::createMessageError(response,"header: User-Agent");
+        return 400;
+    }
+    DB::data data;
+    data.userAgent=headerIterator->second;
+    if(!request.IsObject()){
+        Log::getLog(Log::warn,this,INFO_LOG)<<"JSON invalido"<<std::endl;
+        RESTServer::createMessageError(response,"JSON");
+        return 400;
+    }
+    rapidjson::Value value;
+    data.updateExpireTime=Utils::isMember(value,request,"expiretime");
+    if(data.updateExpireTime){
+        if(!value.IsInt64()||(data.expireTime=value.GetInt64())<=0){
+            Log::getLog(Log::warn,this,INFO_LOG)<<"expiretime invalido"<<std::endl;
+            RESTServer::createMessageError(response,"JSON: expiretime");
+            return 400;
+        }
+    }
+    data.updateValue=Utils::isMember(value,request,"value");
+    if(data.updateValue){
+        if(!value.IsString()){
+            Log::getLog(Log::warn,this,INFO_LOG)<<"value invalido"<<std::endl;
+            RESTServer::createMessageError(response,"JSON: value");
+            return 400;
+        }
+        data.value=value.GetString();
+    }
+    data.session=id;
+    switch(DB::patchSession(data)){
+        case DB::sessionNotFound:
+            Log::getLog(Log::warn,this,INFO_LOG)<<"sesion no encontrada"<<std::endl;
+            return 404;
+    }
+    auto &allocator=response.GetAllocator();
+    response.SetObject();
+    response.AddMember("value",data.value,allocator);
+    response.AddMember("expireepoch",data.expireTime,allocator);
+    return 200;
+}
+
 int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string &id,std::unordered_map<std::string,std::string> &headers){
     Log::getLog(Log::debug,this,INFO_LOG)<<"DELETE /database/session/{id}"<<std::endl;
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
@@ -156,13 +202,21 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                 if(nodes[1]=="session"){
                     if(request.method=="GET"){
                         rapidjson::Document responseDoc;
-                        response.code=databaseSessionGET(responseDoc,nodes[2],request.headers);
+                        response.code=this->databaseSessionGET(responseDoc,nodes[2],request.headers);
+                        if(responseDoc.IsObject()){
+                            response.body=RESTServer::documentToString(responseDoc);
+                        }
+                    }else if(request.method=="PATCH"){
+                        rapidjson::Document requestDoc;
+                        requestDoc.Parse(request.body);
+                        rapidjson::Document responseDoc;
+                        response.code=this->databaseSessionPATCH(responseDoc,requestDoc,nodes[2],request.headers);
                         if(responseDoc.IsObject()){
                             response.body=RESTServer::documentToString(responseDoc);
                         }
                     }else if(request.method=="DELETE"){
                         rapidjson::Document responseDoc;
-                        response.code=databaseSessionDELETE(responseDoc,nodes[2],request.headers);
+                        response.code=this->databaseSessionDELETE(responseDoc,nodes[2],request.headers);
                         if(responseDoc.IsObject()){
                             response.body=RESTServer::documentToString(responseDoc);
                         }

@@ -61,11 +61,11 @@
             //obtiene una posicion de tiempo caducada en un dispostivo
             cl::Event getPostionExpireTime(size_t &position,size_t epoch,size_t expireTime);
             //obtiene un tiempo en un dispostivo en una posicion
-            cl::Event getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl::Event> &events);
+            cl::Event getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl::Event> *events=NULL);
             //chequea y establece un tiempo en un dispostivo en una posicion
-            cl::Event checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> &events);
+            cl::Event checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> *events=NULL);
             //establece un hash en un dispostivo en una posicion
-            cl::Event setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> &events);
+            cl::Event setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> *events=NULL);
 
             //operadores sobrecargados para mapas, listas y condiciones
             bool operator==(const OpenCL &device);

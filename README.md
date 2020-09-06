@@ -70,6 +70,35 @@ Busca una sesion por un identificador
       | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
   
   - 404 Not Found
+  
+###### PATCH [HOST]/database/session/{id}
+
+Modifica una sesion
+
+- Entrada
+  - Header
+
+    | Clave | Obligatorio | Tipo | Valores | Description |
+    | --- | --- | --- | --- | --- |
+    | User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+
+  - Body
+
+    | Clave | Obligatorio | Tipo | Valores | Description |
+    | --- | --- | --- | --- | --- |
+    | expiretime |  | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
+    | value |  | String |  | Valor que se le asigna a la sesion |
+
+- Salida
+  - 200 OK
+    - Body
+      
+	  | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | value | String |  | Valor de la sesion |
+      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+	  
+  - 404 Not Found
 
 ###### DELETE [HOST]/database/session/{id}
 
