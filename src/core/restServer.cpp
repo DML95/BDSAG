@@ -194,6 +194,13 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                         Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
                         response.code=405;
                     }
+                }else if(nodes[1]=="config"){
+                    if(request.method=="GET"){
+                        response.body=Config::getConfig();
+                    }else{
+                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+                        response.code=405;
+                    }
                 }
             }
             break;

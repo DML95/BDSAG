@@ -14,6 +14,16 @@ Archivo de configuaracion de la base de datos
 | port | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
 | logs | :white_check_mark: | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
 
+###### GET [HOST]/database/config
+
+Devuelve el contenido del archivo de configuracion con el que se inicio la base de datos
+
+- Salida
+  - 200 OK
+    - Body
+	
+	  Contenido del archivo de config.json
+
 ###### POST [HOST]/database/session
 
 Crea una sesion

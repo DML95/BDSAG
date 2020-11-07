@@ -4,6 +4,7 @@
 #include"utils.h"
 #include"../apiRapidjson.h"
 
+std::string Config::config;
 size_t Config::sizeDB;
 size_t Config::sizeSesion;
 unsigned short Config::port;
@@ -18,6 +19,7 @@ Config::StaticClass::StaticClass(){
     if(!documen.IsObject()){
         throw Exception(0,"[config.json] JSON invalido",INFO_LOG);
     }
+    Config::config=config;
     rapidjson::Value value;
     long long tempValue;
     //leyendo sizeDB
@@ -46,6 +48,10 @@ Config::StaticClass::StaticClass(){
     stringTemp=value.GetString();
     Log::setVisibility(stringTemp);
     Log::getLog(Log::info,INFO_LOG)<<"[config.json] logs: "<<stringTemp<<std::endl;
+}
+
+std::string Config::getConfig(){
+    return Config::config;
 }
 
 size_t Config::getSizeDB(){
