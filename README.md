@@ -141,6 +141,13 @@ Elimina una sesion por un identificador
 ###### Entorno de desarrollo
 
 * Copilador -> GCC (mingw-w64)
-* IDE -> Code::Blocks
+* IDE -> Eclipse CDT
 * Sistema Opertivo -> Windows
 * Dependencias -> RapidJSON, microhttpd, OpenCL
+
+###### Instalacion y ejecuación
+
+1. Abrir la consola de comandos
+2. Situarse en la carpeta del proyecto
+3. Ejecutar el comando **make**
+4. Ejecutar el archivo **bin/BDSAG**

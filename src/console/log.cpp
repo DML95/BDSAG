@@ -1,7 +1,7 @@
 #include <ostream>
 #include<sstream>
 
-#include"Log.h"
+#include"log.h"
 #include"../utils/exception.h"
 
 std::unordered_map<std::string,Log::type> Log::mapStringType={
