@@ -73,6 +73,9 @@ $(info DEPS = $(DEPS))
 
 ## TARGETS
 
+#targets que no son archivos
+.PHONY: all clean
+
 #inicio del make
 all: $(FILE_BIN)
 
