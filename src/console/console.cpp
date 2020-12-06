@@ -13,6 +13,15 @@ struct Console::plataformFunctions{
             function();
             return true;
         }
+
+	#elif __linux__
+
+        static void closeEvent(sig_atomic_t s){
+        	Log::getLog(Log::trace,INFO_LOG)<<"Llamada a closeEvent"<<std::endl;
+        	Console::event function=Console::function.load();
+        	function();
+        }
+
     #endif
 };
 
@@ -21,5 +30,7 @@ void Console::setCloseEvent(Console::event function){
     Console::function.store(function);
     #ifdef _WIN32
         ::SetConsoleCtrlHandler(Console::plataformFunctions::handlerRoutine,(bool)function);
+	#elif __linux__
+        ::signal(SIGINT,Console::plataformFunctions::closeEvent);
     #endif
 }

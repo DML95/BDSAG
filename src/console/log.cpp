@@ -4,7 +4,7 @@
 #include"log.h"
 #include"../utils/exception.h"
 
-std::unordered_map<std::string,Log::type> Log::mapStringType={
+/*std::unordered_map<std::string,Log::type> Log::mapStringType={
     {"NONE",Log::none},
     {"FATAL",Log::fatal},
     {"ERROR",Log::error},
@@ -13,11 +13,11 @@ std::unordered_map<std::string,Log::type> Log::mapStringType={
     {"DEBUG",Log::debug},
     {"TRACE",Log::trace},
     {"ALL",Log::all}
-};
+};*/
 
 std::atomic_int Log::typeValue(Log::all);
 
-std::vector<std::string> Log::typeStr={"","FATAL","ERROR","WARN","INFO","DEBUG","TRACE",""};
+//std::vector<std::string> Log::typeStr={"","FATAL","ERROR","WARN","INFO","DEBUG","TRACE",""};
 
 NullBuffer Log::nullBuffer;
 std::ostream Log::nullStream(&Log::nullBuffer);
@@ -32,11 +32,16 @@ void Log::setVisibility(Log::type type){
 
 void Log::setVisibility(std::string type){
     Log::getLog(Log::info,INFO_LOG)<<"Estableciendo visivilidad de logs: "<<type<<std::endl;
-    std::unordered_map<std::string,Log::type>::iterator iterator=Log::mapStringType.find(type);
-    if(iterator==Log::mapStringType.end()){
+    int typeVal=-1;
+    for(int cont=0,size=Log::mapTypeStr.size();cont<size&&typeVal<0;cont++){
+    	if(!type.compare(Log::mapTypeStr[cont])){
+    		typeVal=cont;
+    	}
+    }
+    if(typeVal<0){
         throw Exception(0,"valor de log invalido",INFO_LOG);
     }
-    Log::typeValue.store(iterator->second);
+    Log::typeValue.store(typeVal);
 }
 
 std::ostream& Log::getLog(Log::type type,std::string function,int line){

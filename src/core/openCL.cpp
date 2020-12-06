@@ -63,18 +63,22 @@ size_t OpenCL::validAndAddDevices(){
     //listando platarformas
     for(cl::Platform &platform:platforms){
         Log::getLog(Log::info,INFO_LOG)<<"Plataforma: "<<platform.getInfo<CL_PLATFORM_NAME>()<<std::endl;
-        std::vector<cl::Device> devices;
-        platform.getDevices(CL_DEVICE_TYPE_GPU,&devices);
-        //listando GPUs de las platarformas
-        for(cl::Device &device:devices){
-            Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_NAME: "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
-            size_t maxAllocSize=device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
-            Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_MAX_MEM_ALLOC_SIZE: "<<Utils::bytesToString(maxAllocSize)<<std::endl;
-            if(OpenCL::checkExtensions(device)){
-                OpenCL::devices.push_back(OpenCL(device,source));
-                maxAllocSizeAllDevices+=maxAllocSize;
-                Log::getLog(Log::info,device(),INFO_LOG)<<"Dispositivo agregado"<<std::endl;
-            }else Log::getLog(Log::warn,device(),INFO_LOG)<<"Dispositivo no valido"<<std::endl;
+        try{
+        	std::vector<cl::Device> devices;
+			platform.getDevices(CL_DEVICE_TYPE_GPU,&devices);
+			//listando GPUs de las platarformas
+			for(cl::Device &device:devices){
+				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_NAME: "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
+				size_t maxAllocSize=device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
+				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_MAX_MEM_ALLOC_SIZE: "<<Utils::bytesToString(maxAllocSize)<<std::endl;
+				if(OpenCL::checkExtensions(device)){
+					OpenCL::devices.push_back(OpenCL(device,source));
+					maxAllocSizeAllDevices+=maxAllocSize;
+					Log::getLog(Log::info,device(),INFO_LOG)<<"Dispositivo agregado"<<std::endl;
+				}else Log::getLog(Log::warn,device(),INFO_LOG)<<"Dispositivo no valido"<<std::endl;
+			}
+        }catch(cl::Error &e){
+        	Log::getLog(Log::warn,INFO_LOG)<<"No se han podido leer los datos de la plataforma"<<std::endl;
         }
     }
     return maxAllocSizeAllDevices;

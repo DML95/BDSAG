@@ -45,7 +45,7 @@ int AbstractServer::internalConnection(void* cls, struct MHD_Connection* connect
         infoBodyRequest->processed=false;
         *con_cls=infoBodyRequest;
         ret=MHD_YES;
-    }else if(!infoBodyRequest->processed){
+    }else if(!infoBodyRequest->processed&&*upload_data_size){
         Log::getLog(Log::trace,abstractServer,INFO_LOG)<<"[Peticion] Leyendo el cuerpo"<<std::endl;
         if(upload_data)infoBodyRequest->body=std::string(upload_data);
         infoBodyRequest->processed=true;

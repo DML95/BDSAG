@@ -5,6 +5,7 @@
     #include<atomic>
     #include<vector>
     #include<unordered_map>
+	#include<array>
 
     #include"../utils/nullBuffer.h"
 
@@ -25,10 +26,10 @@
         private:
             Log();
 
-            static std::unordered_map<std::string,Log::type> mapStringType;
+            constexpr static std::array<const char*,8> mapTypeStr={"NONE","FATAL","ERROR","WARN","INFO","DEBUG","TRACE","ALL"};
+            constexpr static std::array<const char*,8> typeStr={"","FATAL","ERROR","WARN","INFO","DEBUG","TRACE",""};
 
             static std::atomic_int typeValue;
-            static std::vector<std::string> typeStr;
             static NullBuffer nullBuffer;
             static std::ostream nullStream;
 

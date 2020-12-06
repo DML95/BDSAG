@@ -138,11 +138,19 @@ Elimina una sesion por un identificador
   
   - 404 Not Found
 
+###### Requistos
+
+GPUs con OpenCL compatible con
+   * cl_khr_global_int32_base_atomic
+   * cl_khr_global_int32_extended_atomic
+   * cl_khr_int64_base_atomics
+   * cl_khr_int64_extended_atomics
+
 ###### Entorno de desarrollo
 
-* Copilador -> GCC (mingw-w64)
+* Copilador ->  mingw-w64, GCC
 * IDE -> Eclipse CDT
-* Sistema Opertivo -> Windows
+* Sistema Opertivo -> Windows, Linux
 * Dependencias -> RapidJSON, microhttpd, OpenCL
 
 ###### Instalacion y ejecuación

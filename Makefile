@@ -2,7 +2,7 @@
 
 CXX=g++
 CXXFLAGS=-O3 -std=c++17 -Wall
-LDFLAGS=-static
+LDFLAGS=-static-libstdc++ -static-libgcc
 
 DIRSRC = src
 DIROBJ = obj
@@ -11,7 +11,7 @@ DIRDEP = dep
 
 PROGRAM=BDSAG
 LDLIBS=-lOpenCL -lmicrohttpd
-PRIORITY_FILES=src/console/log.cpp
+PRIORITY_FILES=src/console/log.cpp src/utils/utils.cpp
 
 ## LOGICA
 
@@ -35,12 +35,12 @@ define RM_OS
 	del /Q /S $(subst /,\,$(1))
 endef
 else ifeq ($(OS_NAME),Linux)
-$(error Version incompatible con Linux)
+PROGRAM:=$(addsuffix .elf,$(PROGRAM))
 define MKDIR_OS
 	-mkdir -p $(1)
 endef
 define RM_OS
-	rm $(1)
+	rm -rf $(1)
 endef
 else
 $(error Sistema operativo no valido)
@@ -53,14 +53,19 @@ $(info FILE_BIN = $(FILE_BIN))
 
 #listamos los archivos de codigo
 SRCS = $(wildcard $(DIRSRC)/*.cpp $(DIRSRC)/*/*.cpp)
-$(info SRCS sin prorizan = $(SRCS))
+$(info SRCS sin prorizar = $(SRCS))
 
 #chequeamos que los archivos a prorizar existan
 ifeq ($(filter $(PRIORITY_FILES),$(SRCS)),)
 $(error Archivos a prorizar no validos)
 endif
+
 #priorizamos la compilacion de ciertos archivos
 SRCS:=$(filter-out $(PRIORITY_FILES),$(SRCS)) $(PRIORITY_FILES)
+ifeq ($(OS_NAME),Linux)
+#en linux los archivos se priorizan a la inversa
+SRCS:=$(shell printf "%s\n" $(strip ${SRCS}) | tac)
+endif
 $(info SRCS priorizado = $(SRCS))
 
 #optenemos los objetos
@@ -89,10 +94,10 @@ $(FILE_BIN): $(OBJS)
 #patron de objetos a compilar
 $(DIROBJ)/%.o: $(DIRSRC)/%.cpp
 #	creamos los subdirectorios y generamos los archivos de dependencias
-	$(call MKDIR_OS,$(@D))
+	$(call MKDIR_OS,$(@D:$(DIROBJ)%=$(DIRDEP)%))
 	$(CXX) -MM $< > $(@:$(DIROBJ)/%.o=$(DIRDEP)/%.d)
 #	creamos los subdirectorios y compilamos los objetos
-	$(call MKDIR_OS,$(@D:$(DIROBJ)%=$(DIRDEP)%))
+	$(call MKDIR_OS,$(@D))
 	$(CXX) -o $@ -c $< $(CXXFLAGS) -I$(DIRSRC)
 
 #limpiamos los archivos antiguos

@@ -33,6 +33,16 @@ Utils::StaticClass::StaticClass(){
         Utils::pathExecutable.resize(found+1);
     }
 
+#elif __linux__
+
+    void Utils::getPathExecutable(){
+        Utils::pathExecutable=std::string(0xff,0);
+        size_t size=::readlink("/proc/self/exe",(char*)Utils::pathExecutable.data(),Utils::pathExecutable.size());
+        Utils::pathExecutable.resize(size);
+        std::size_t found=Utils::pathExecutable.find_last_of("/\\");
+        Utils::pathExecutable.resize(found+1);
+    }
+
 #endif
 
 std::string Utils::bytesToString(size_t bytes){
