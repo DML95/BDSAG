@@ -168,6 +168,15 @@ int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string 
     return 200;
 }
 
+int RESTServer::databaseSessionsCountGET(rapidjson::Document &response){
+	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/sessions/count"<<std::endl;
+	auto &allocator=response.GetAllocator();
+	response.SetObject();
+	response.AddMember("count",DB::countSessions(),allocator);
+	response.AddMember("maxcount",Config::getSizeDB(),allocator);
+	return 200;
+}
+
 RESTServer::RESTServer():
         AbstractServer(Config::getPort()){
     Log::getLog(Log::info,this,INFO_LOG)<<"Iniciando servidor REST"<<std::endl;
@@ -231,6 +240,19 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                         Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
                         response.code=405;
                     }
+                }else if(nodes[1]=="sessions"){
+                	if(nodes[2]=="count"){
+						if(request.method=="GET"){
+							rapidjson::Document responseDoc;
+							response.code=this->databaseSessionsCountGET(responseDoc);
+							if(responseDoc.IsObject()){
+								response.body=RESTServer::documentToString(responseDoc);
+							}
+						}else{
+							Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+							response.code=405;
+						}
+                	}
                 }
             }
             break;

@@ -228,6 +228,21 @@ cl::Event OpenCL::setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl
     return event;
 }
 
+cl::Event OpenCL::getUseCount(size_t &count,size_t epoch,std::vector<cl::Event> *events){
+	Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Contando sesiones en uso"<<std::endl;
+	count=0;
+	std::vector<cl::Event> internalEvents(1);
+	cl::Buffer countBuffer=this->createBuffer(sizeof(size_t));
+	this->commandQueue.enqueueWriteBuffer(countBuffer,CL_FALSE,0,sizeof(size_t),&count,events,&internalEvents[0]);
+	cl::Kernel kernel(this->program,"getUseCount");
+	kernel.setArg(0,countBuffer);
+	kernel.setArg(1,this->time);
+	kernel.setArg(2,epoch);
+	this->commandQueue.enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(this->sizeBuffers),cl::NullRange,&internalEvents,&internalEvents[0]);
+	this->commandQueue.enqueueReadBuffer(countBuffer,CL_FALSE,0,sizeof(size_t),&count,&internalEvents,&internalEvents[0]);
+	return internalEvents[0];
+}
+
 bool OpenCL::operator==(const OpenCL &device){
     return this->device()==device.device();
 }

@@ -25,6 +25,9 @@
             //DELETE /database/session/{id}
             //elimina una sesion
             int databaseSessionDELETE(rapidjson::Document &response,std::string &id,std::unordered_map<std::string,std::string> &headers);
+            //GET /database/sessions/count
+            //cuanta el numero de sesiones creadas
+            int databaseSessionsCountGET(rapidjson::Document &response);
             //crea un json de error
             static void createMessageError(rapidjson::Document &document,std::string error);
         protected:

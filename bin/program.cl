@@ -69,3 +69,19 @@ __kernel void getPostionExpireTime(__global size_host_t *position,
     }
     atomic_xchg(&timeBuffer[localPosition],time);   //UnLock
 }
+
+//cuenta las sesiones activas
+__kernel void getUseCount(
+		__global size_host_t *count,
+		__global unsigned long *timeBuffer,
+		size_host_t epoch){
+	size_t localPosition=get_global_id(0);
+	size_host_t time;
+	do{
+		time=atomic_xchg(&timeBuffer[localPosition],MAX_SIZE_HOST);
+	}while(time==MAX_SIZE_HOST);    //Lock
+	if(epoch<=time){
+		atomic_inc(count);
+	}
+	atomic_xchg(&timeBuffer[localPosition],time);   //UnLock
+}

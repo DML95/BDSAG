@@ -68,7 +68,7 @@
             static DB::pointerDevice getAndUpdatePostionTime(size_t expireTime,DB::status &status);
             //obtiene un hash a partir de una cadena
             static TYPE_BUFFER getHash(std::string &string);
-            //devuelve un tamaño estimado para evitar desbordamientos para el buffer
+            //devuelve un tamaï¿½o estimado para evitar desbordamientos para el buffer
             static size_t getEstimatedSizeBuffer(OpenCL &device);
             //busca una sesion por su hash y llama a una funcion cuando encuentra coincidencias
             //si se repite el hash se llama varias veces
@@ -88,6 +88,8 @@
             static DB::status patchSession(DB::data &data);
             //elimina una sesion de la BD
             static DB::status deleteSession(DB::data &data);
+            //cuanta las sesiones activas
+            static size_t countSessions();
     };
 
 #endif // DB_H_INCLUDED

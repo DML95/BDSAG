@@ -272,3 +272,22 @@ DB::status DB::deleteSession(DB::data &data){
             "\n\tUserAgent: "<<data.userAgent<<std::endl;
     return DB::findSession(DB::checkAndDeleteSession,data);
 }
+
+size_t DB::countSessions(){
+	Log::getLog(Log::debug,INFO_LOG)<<"Contado el numaro de sesiones"<<std::endl;
+	size_t epoch=Utils::getEpoch();
+	std::vector<size_t> counts(DB::openCl.size());
+	std::vector<cl::Event> events(DB::openCl.size());
+	size_t count=0;
+	for(OpenCL &device:DB::openCl){
+		events[count]=device.getUseCount(counts[count],epoch,NULL);
+		count++;
+	}
+	count=0;
+	cl::Event::waitForEvents(events);
+	for(size_t val:counts){
+		std::cout<<val<<std::endl;
+		count+=val;
+	}
+	return count;
+}

@@ -138,9 +138,24 @@ Elimina una sesion por un identificador
   
   - 404 Not Found
 
+###### GET [HOST]/database/sessions/count
+
+Cuanta el numero de sesiones creadas
+
+- Entrada
+
+- Salida
+  - 200 OK
+    - Body
+
+      | Clave | Tipo | Valores | Description |
+      | --- | --- | --- | --- |
+      | count | Long |  | Numero de sesiones creadas |
+      | maxcount | Long |  | Numero maximo de sesiones (sizeDB de config.json) |
+
 ###### Requistos
 
-GPUs con OpenCL compatible con
+GPUs con OpenCL 1.2 o superior compatible con
    * cl_khr_global_int32_base_atomic
    * cl_khr_global_int32_extended_atomic
    * cl_khr_int64_base_atomics

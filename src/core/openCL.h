@@ -50,7 +50,7 @@
         public:
             //devuelve los dispotivos
             static std::vector<OpenCL>& getDevices();
-            //devuelve el tamaño del buffer
+            //devuelve el tamaÃ±o del buffer
             size_t getSizeBufers();
             //devuelve la lista de comando
             const cl::CommandQueue& getCommandQueue();
@@ -66,6 +66,8 @@
             cl::Event checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> *events=NULL);
             //establece un hash en un dispostivo en una posicion
             cl::Event setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> *events=NULL);
+            //cuenta las sesiones activas
+            cl::Event getUseCount(size_t &count,size_t epoch,std::vector<cl::Event> *events=NULL);
 
             //operadores sobrecargados para mapas, listas y condiciones
             bool operator==(const OpenCL &device);
