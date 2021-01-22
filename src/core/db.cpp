@@ -286,7 +286,6 @@ size_t DB::countSessions(){
 	count=0;
 	cl::Event::waitForEvents(events);
 	for(size_t val:counts){
-		std::cout<<val<<std::endl;
 		count+=val;
 	}
 	return count;
