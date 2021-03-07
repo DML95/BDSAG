@@ -1,6 +1,0 @@
-{
-    "sizeDB":1000000,
-    "sizeSesion":100,
-    "port":8080,
-    "logs":"INFO"
-}

@@ -4,54 +4,62 @@
 #include"utils.h"
 #include"../apiRapidjson.h"
 
-std::string Config::config;
+Lua Config::lua;
 size_t Config::sizeDB;
 size_t Config::sizeSesion;
 unsigned short Config::port;
+std::string Config::logs;
 
 Config::StaticClass Config::staticClass;
 
 Config::StaticClass::StaticClass(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Cargando configuaracion: config.json"<<std::endl;
-    std::string config=Utils::getDataFile("config.json",true);
-    rapidjson::Document documen;
-    documen.Parse(config);
-    if(!documen.IsObject()){
-        throw Exception(0,"[config.json] JSON invalido",INFO_LOG);
-    }
-    Config::config=config;
-    rapidjson::Value value;
-    long long tempValue;
-    //leyendo sizeDB
-    if(!Utils::isMember(value,documen,"sizeDB")||!value.IsInt64()||(tempValue=value.GetInt64())<=0){
-        throw Exception(0,"[config.json] sizeDB invalido",INFO_LOG);
-    }
-    Config::sizeDB=tempValue;
-    Log::getLog(Log::info,INFO_LOG)<<"[config.json] sizeDB: "<<Config::sizeDB<<std::endl;
-    //leyendo sizeSesion
-    if(!Utils::isMember(value,documen,"sizeSesion")||!value.IsInt64()||(tempValue=value.GetInt64())<=0){
-        throw Exception(0,"[config.json] sizeSesion invalido",INFO_LOG);
-    }
-    Config::sizeSesion=tempValue;
-    Log::getLog(Log::info,INFO_LOG)<<"[config.json] sizeSesion: "<<Config::sizeSesion<<std::endl;
-    //leyendo port
-    if(!Utils::isMember(value,documen,"port")||!value.IsInt64()||(tempValue=value.GetInt64())<0||tempValue>0xffff){
-        throw Exception(0,"[config.json] port invalido",INFO_LOG);
-    }
-    Config::port=tempValue;
-    Log::getLog(Log::info,INFO_LOG)<<"[config.json] port: "<<Config::port<<std::endl;
-    //leyendo logs
-    std::string stringTemp;
-    if(!Utils::isMember(value,documen,"logs")||!value.IsString()){
-        throw Exception(0,"[config.json] logs invalido",INFO_LOG);
-    }
-    stringTemp=value.GetString();
-    Log::setVisibility(stringTemp);
-    Log::getLog(Log::info,INFO_LOG)<<"[config.json] logs: "<<stringTemp<<std::endl;
+    Log::getLog(Log::trace,INFO_LOG)<<"Cargando configuaracion: config.lua"<<std::endl;
+    std::string config=Utils::getDataFile("config.lua",true);
+    Config::lua.setCode(config);
+    Config::lua.pushGlobalName("main");
+    Config::lua.call(0);
+    Config::lua.pop();
+    Config::lua.pushGlobalName("getConfig");
+    Config::lua.call(4);
+    //sizeDB
+    long long tempValue=Config::lua.getInteger(-4);
+    Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] sizeDB: "<<tempValue<<std::endl;
+	if(tempValue<=0){
+		throw Exception(0,"[config.lua:getConfig] sizeDB invalido",INFO_LOG);
+	}
+	Config::sizeDB=tempValue;
+	//sizeSesion
+	tempValue=Config::lua.getInteger(-3);
+	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] sizeSesion: "<<tempValue<<std::endl;
+	if(tempValue<=0){
+		throw Exception(0,"[config.lua:getConfig] sizeSesion invalido",INFO_LOG);
+	}
+	Config::sizeSesion=tempValue;
+	//port
+	tempValue=Config::lua.getInteger(-2);
+	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] port: "<<tempValue<<std::endl;
+	if(tempValue<=0x0||tempValue>=0xffff){
+		throw Exception(0,"[config.lua:getConfig] port invalido",INFO_LOG);
+	}
+	Config::port=tempValue;
+	//logs
+	std::string stringTemp=Config::lua.getString(-1);
+	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] logs: "<<stringTemp<<std::endl;
+	Log::setVisibility(stringTemp);
+	Config::logs=stringTemp;
+	Config::lua.pop();
 }
 
-std::string Config::getConfig(){
-    return Config::config;
+bool Config::checkDeviceUse(std::string &platformName,std::string &deviceType,std::string &deviceName){
+	Config::lua.pushGlobalName("checkDeviceUse");
+	Config::lua.push(platformName);
+	Config::lua.push(deviceType);
+	Config::lua.push(deviceName);
+	Config::lua.call(1);
+	bool ret=Config::lua.getBoolean(-1);
+	Config::lua.pop();
+	Log::getLog(Log::info,INFO_LOG)<<"[config.lua:checkDeviceUse] use: "<<ret<<std::endl;
+	return ret;
 }
 
 size_t Config::getSizeDB(){
@@ -64,4 +72,8 @@ size_t Config::getSizeSesion(){
 
 unsigned short Config::getPort(){
     return Config::port;
+}
+
+std::string Config::getLogs(){
+	return Config::logs;
 }

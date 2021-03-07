@@ -3,16 +3,46 @@
 
 Base de datos REST en RAM acelerada por GPU especializada en la creacion y gestion de sesiones
 
-###### config.json
+###### config.lua
 
-Archivo de configuaracion de la base de datos
+Script LUA de configuaracion de la base de datos
 
-| Clave | Obligatorio | Tipo | Valores | Description |
-| --- | --- | --- | --- | --- |
-| sizeDB | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
-| sizeSesion | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
-| port | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
-| logs | :white_check_mark: | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
+- Funciones obligatorias
+
+  - main()
+
+    Se ejecuta antes que cualquier otra funcion
+
+  - getConfig()
+
+    Devuelve la configuracion de la base de datos
+
+    - Retorno
+
+      | Posicion | Obligatorio | Tipo | Valores | Description |
+      | --- | --- | --- | --- | --- |
+      | 1 | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
+      | 2 | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
+      | 3 | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
+      | 4 | :white_check_mark: | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
+
+  - checkDeviceUse(platformName,deviceType,deviceName)
+
+    Selecciona si el dispositivo puede que ser usado por la Base de datos
+
+    - Parametros
+
+      | Parametro | Tipo | Valores | Description |
+	  | --- | --- | --- | --- | --- |
+	  | platformName | String |  | Nombre de la plataforma |
+	  | deviceType | Enum | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
+	  | deviceName | String |  | Nombre del dispostivo |
+
+    - Retorno
+
+      | Posicion | Obligatorio | Tipo | Valores | Description |
+      | --- | --- | --- | --- | --- |
+      | 1 | :white_check_mark: | Boolean |  | Devualve si quiere que el dispositivo sea usado |
 
 ###### GET [HOST]/database/config
 

@@ -3,6 +3,7 @@
 
     #include<vector>
     #include<string>
+	#include <unordered_map>
 
     #include"../apiCL.h"
 
@@ -11,6 +12,7 @@
     class OpenCL{
         private:
 
+    		static std::unordered_map<cl_device_type,std::string> deviceTipeName;
             static std::vector<std::string> extensionList;
             static std::vector<OpenCL> devices;
 

@@ -10,7 +10,7 @@ DIRBIN = bin
 DIRDEP = dep
 
 PROGRAM=BDSAG
-LDLIBS=-lOpenCL -lmicrohttpd
+LDLIBS=-lOpenCL -lmicrohttpd -llua
 PRIORITY_FILES=src/console/log.cpp src/utils/utils.cpp
 
 ## LOGICA

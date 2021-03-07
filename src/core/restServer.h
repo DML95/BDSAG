@@ -13,6 +13,9 @@
             std::vector<std::string> urlToNodes(std::string &url);
             //combierte el document de rapidjson en string
             static std::string documentToString(rapidjson::Document &document);
+            //GET /database/config
+            //devualve la configuaracion actual de la BD
+            std::string databaseConfigGET();
             //POST /database/session
             //crea una sesion
             int databaseSessionPOST(rapidjson::Document &response,rapidjson::Document &request,std::unordered_map<std::string,std::string> &headers);

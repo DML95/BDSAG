@@ -37,6 +37,18 @@ void RESTServer::createMessageError(rapidjson::Document &document,std::string er
     document.AddMember("error",error,allocator);
 }
 
+std::string RESTServer::databaseConfigGET(){
+	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/config"<<std::endl;
+	rapidjson::Document response;
+	auto &allocator=response.GetAllocator();
+	response.SetObject();
+	response.AddMember("sizeDB",Config::getSizeDB(),allocator);
+	response.AddMember("sizeSesion",Config::getSizeSesion(),allocator);
+	response.AddMember("port",Config::getPort(),allocator);
+	response.AddMember("logs",Config::getLogs(),allocator);
+	return RESTServer::documentToString(response);
+}
+
 int RESTServer::databaseSessionPOST(rapidjson::Document &response,rapidjson::Document &request,std::unordered_map<std::string,std::string> &headers){
     Log::getLog(Log::debug,this,INFO_LOG)<<"POST /database/session"<<std::endl;
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
@@ -205,7 +217,8 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                     }
                 }else if(nodes[1]=="config"){
                     if(request.method=="GET"){
-                        response.body=Config::getConfig();
+                        response.body=this->databaseConfigGET();
+                        response.code=200;
                     }else{
                         Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
                         response.code=405;

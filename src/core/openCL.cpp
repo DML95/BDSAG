@@ -7,6 +7,14 @@
 
 #include <limits>
 
+std::unordered_map<cl_device_type,std::string> OpenCL::deviceTipeName={
+	{CL_DEVICE_TYPE_DEFAULT,"DEFAULT"},
+	{CL_DEVICE_TYPE_CPU,"CPU"},
+	{CL_DEVICE_TYPE_GPU,"GPU"},
+	{CL_DEVICE_TYPE_ACCELERATOR,"ACCELERATOR"},
+	{CL_DEVICE_TYPE_CUSTOM,"CUSTOM"}
+};
+
 std::vector<std::string> OpenCL::extensionList={
     "cl_khr_global_int32_base_atomic",
     "cl_khr_global_int32_extended_atomic",
@@ -62,16 +70,21 @@ size_t OpenCL::validAndAddDevices(){
     std::string source=Utils::getDataFile("program.cl",true);
     //listando platarformas
     for(cl::Platform &platform:platforms){
-        Log::getLog(Log::info,INFO_LOG)<<"Plataforma: "<<platform.getInfo<CL_PLATFORM_NAME>()<<std::endl;
+    	std::string platformName=platform.getInfo<CL_PLATFORM_NAME>();
+        Log::getLog(Log::info,INFO_LOG)<<"CL_PLATFORM_NAME: "<<platformName<<std::endl;
         try{
         	std::vector<cl::Device> devices;
-			platform.getDevices(CL_DEVICE_TYPE_GPU,&devices);
+			platform.getDevices(CL_DEVICE_TYPE_ALL,&devices);
 			//listando GPUs de las platarformas
 			for(cl::Device &device:devices){
-				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_NAME: "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
+				std::string deviceType=OpenCL::deviceTipeName[device.getInfo<CL_DEVICE_TYPE>()];
+				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_TYPE: "<<deviceType<<std::endl;
+				std::string deviceName=device.getInfo<CL_DEVICE_NAME>();
+				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_NAME: "<<deviceName<<std::endl;
 				size_t maxAllocSize=device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
 				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_MAX_MEM_ALLOC_SIZE: "<<Utils::bytesToString(maxAllocSize)<<std::endl;
-				if(OpenCL::checkExtensions(device)){
+				if(OpenCL::checkExtensions(device)&&
+						Config::checkDeviceUse(platformName,deviceType, deviceName)){
 					OpenCL::devices.push_back(OpenCL(device,source));
 					maxAllocSizeAllDevices+=maxAllocSize;
 					Log::getLog(Log::info,device(),INFO_LOG)<<"Dispositivo agregado"<<std::endl;
