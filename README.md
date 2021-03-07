@@ -33,7 +33,7 @@ Script LUA de configuaracion de la base de datos
     - Parametros
 
       | Parametro | Tipo | Valores | Description |
-	  | --- | --- | --- | --- | --- |
+	  | --- | --- | --- | --- |
 	  | platformName | String |  | Nombre de la plataforma |
 	  | deviceType | Enum | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
 	  | deviceName | String |  | Nombre del dispostivo |
