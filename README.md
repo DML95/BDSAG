@@ -196,7 +196,7 @@ GPUs con OpenCL 1.2 o superior compatible con
 * Copilador ->  mingw-w64, GCC
 * IDE -> Eclipse CDT
 * Sistema Opertivo -> Windows, Linux
-* Dependencias -> RapidJSON, microhttpd, OpenCL
+* Dependencias -> RapidJSON, microhttpd, OpenCL, LUA
 
 ###### Instalacion y ejecuación
 
