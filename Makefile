@@ -10,7 +10,7 @@ DIRBIN = bin
 DIRDEP = dep
 
 PROGRAM=BDSAG
-LDLIBS=-lOpenCL -lmicrohttpd -llua
+LDLIBS=-lOpenCL -lmicrohttpd
 PRIORITY_FILES=src/console/log.cpp src/utils/utils.cpp
 
 ## LOGICA
@@ -26,7 +26,7 @@ $(info OS_NAME = $(OS_NAME))
 
 #definimos la s condiciones de compilacion dependiendo del sistema operativo
 ifeq ($(OS_NAME),Windows)
-LDLIBS+=-lws2_32
+LDLIBS+=-lws2_32 -llua
 PROGRAM:=$(addsuffix .exe,$(PROGRAM))
 define MKDIR_OS
 	-mkdir $(subst /,\,$(1))
@@ -35,6 +35,7 @@ define RM_OS
 	del /Q /S $(subst /,\,$(1))
 endef
 else ifeq ($(OS_NAME),Linux)
+LDLIBS+=-lws2_32 -llua5.3
 PROGRAM:=$(addsuffix .elf,$(PROGRAM))
 define MKDIR_OS
 	-mkdir -p $(1)
