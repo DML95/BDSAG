@@ -256,6 +256,19 @@ cl::Event OpenCL::getUseCount(size_t &count,size_t epoch,std::vector<cl::Event> 
 	return internalEvents[0];
 }
 
+std::string OpenCL::getPlatform(){
+	cl::Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
+	return platform.getInfo<CL_PLATFORM_NAME>();
+}
+
+std::string OpenCL::getName(){
+	return this->device.getInfo<CL_DEVICE_NAME>();
+}
+
+std::string OpenCL::getType(){
+	return OpenCL::deviceTipeName[this->device.getInfo<CL_DEVICE_TYPE>()];
+}
+
 bool OpenCL::operator==(const OpenCL &device){
     return this->device()==device.device();
 }

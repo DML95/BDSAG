@@ -71,6 +71,11 @@
             //cuenta las sesiones activas
             cl::Event getUseCount(size_t &count,size_t epoch,std::vector<cl::Event> *events=NULL);
 
+            //getter y setter
+            std::string getPlatform();
+            std::string getName();
+            std::string getType();
+
             //operadores sobrecargados para mapas, listas y condiciones
             bool operator==(const OpenCL &device);
             bool operator!=(const OpenCL &device);

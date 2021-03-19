@@ -24,7 +24,7 @@ Script LUA de configuaracion de la base de datos
       | 1 | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
       | 2 | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
       | 3 | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
-      | 4 | :white_check_mark: | Enum | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
+      | 4 | :white_check_mark: | String (Enum) | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
 
   - checkDeviceUse(platformName,deviceType,deviceName)
 
@@ -35,7 +35,7 @@ Script LUA de configuaracion de la base de datos
       | Parametro | Tipo | Valores | Description |
 	  | --- | --- | --- | --- |
 	  | platformName | String |  | Nombre de la plataforma |
-	  | deviceType | Enum | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
+	  | deviceType | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
 	  | deviceName | String |  | Nombre del dispostivo |
 
     - Retorno
@@ -46,13 +46,34 @@ Script LUA de configuaracion de la base de datos
 
 ###### GET [HOST]/database/config
 
-Devuelve el contenido del archivo de configuracion con el que se inicio la base de datos
+Devuelve la configuracion con la que se inicio la base de datos
 
 - Salida
   - 200 OK
     - Body
-	
-	  Contenido del archivo de config.json
+
+	  | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | sizeDB | Long |  | Usuarios reservados en la base de datos |
+      | sizeSesion | Long |  | Numero de caracteres de la sesion |
+      | port | Long |  | Puerto del servidor REST |
+      | logs | String (Enum) | FATAL, ERROR, WARN, INFO, DEBUG, TRACE | Visibilidad de los logs |
+
+###### GET [HOST]/database/devices
+
+Devuelve los dispostivos usados por la base de datos
+
+- Salida
+  - 200 OK
+    - Body
+
+	  | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | devices[] | Array |  | Dispostivos usados por la base de datos |
+      | devices[].platform | String |  | Plataforma del dipostivo |
+      | devices[].name | String |  | Nombre del dipostivo |
+      | devices[].type | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipostivo |
+      | devices[].reservedsessions | Long |  | Numero de sesiones reservadas en el dipostivo |
 
 ###### POST [HOST]/database/session
 

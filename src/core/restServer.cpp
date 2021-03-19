@@ -6,6 +6,8 @@
 #include"db.h"
 #include"../utils/utils.h"
 
+#include"openCL.h"
+
 std::vector<std::string> RESTServer::urlToNodes(std::string &url){
     size_t postion=0;
     size_t postionTemp=0;
@@ -46,6 +48,26 @@ std::string RESTServer::databaseConfigGET(){
 	response.AddMember("sizeSesion",Config::getSizeSesion(),allocator);
 	response.AddMember("port",Config::getPort(),allocator);
 	response.AddMember("logs",Config::getLogs(),allocator);
+	return RESTServer::documentToString(response);
+}
+
+std::string RESTServer::databaseDevicesGET(){
+	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/devices"<<std::endl;
+	rapidjson::Document response;
+	auto &allocator=response.GetAllocator();
+	response.SetObject();
+	rapidjson::Document devices;
+	devices.SetArray();
+	for(OpenCL &deviceCL:OpenCL::getDevices()){
+		rapidjson::Value device;
+		device.SetObject();
+		device.AddMember("platform",deviceCL.getPlatform(), allocator);
+		device.AddMember("name",deviceCL.getName(), allocator);
+		device.AddMember("type",deviceCL.getType(), allocator);
+		device.AddMember("reservedsessions",deviceCL.getSizeBufers(), allocator);
+		devices.PushBack(device, allocator);
+	}
+	response.AddMember("devices", devices, allocator);
 	return RESTServer::documentToString(response);
 }
 
@@ -218,6 +240,14 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
                 }else if(nodes[1]=="config"){
                     if(request.method=="GET"){
                         response.body=this->databaseConfigGET();
+                        response.code=200;
+                    }else{
+                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+                        response.code=405;
+                    }
+                }else if(nodes[1]=="devices"){
+                    if(request.method=="GET"){
+                        response.body=this->databaseDevicesGET();
                         response.code=200;
                     }else{
                         Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
