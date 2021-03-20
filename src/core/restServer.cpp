@@ -8,6 +8,22 @@
 
 #include"openCL.h"
 
+std::unordered_map<std::string,RESTServer::enumNodes> RESTServer::mapNodes={
+	{"database",RESTServer::database},
+	{"session",RESTServer::session},
+	{"config",RESTServer::config},
+	{"devices",RESTServer::devices},
+	{"sessions",RESTServer::sessions},
+	{"count",RESTServer::count},
+};
+
+std::unordered_map<std::string,RESTServer::enumMethods> RESTServer::mapMethods={
+	{"GET",RESTServer::get},
+	{"POST",RESTServer::post},
+	{"PATCH",RESTServer::patch},
+	{"DELETE",RESTServer::deleete},
+};
+
 std::vector<std::string> RESTServer::urlToNodes(std::string &url){
     size_t postion=0;
     size_t postionTemp=0;
@@ -27,10 +43,14 @@ std::vector<std::string> RESTServer::urlToNodes(std::string &url){
 }
 
 std::string RESTServer::documentToString(rapidjson::Document &document){
-    rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-    document.Accept(writer);
-    return sb.GetString();
+	std::string json="";
+	if(!document.IsNull()){
+		rapidjson::StringBuffer sb;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+		document.Accept(writer);
+		json=sb.GetString();
+	}
+	return json;
 }
 
 void RESTServer::createMessageError(rapidjson::Document &document,std::string error){
@@ -216,89 +236,127 @@ RESTServer::RESTServer():
     Log::getLog(Log::info,this,INFO_LOG)<<"Iniciando servidor REST"<<std::endl;
 }
 
+RESTServer::enumNodes RESTServer::getEnumNode(std::string node){
+	auto iterator=RESTServer::mapNodes.find(node);
+	RESTServer::enumNodes enumNode=RESTServer::otherNode;
+	if (iterator!=RESTServer::mapNodes.end()){
+		enumNode=iterator->second;
+	}
+	return enumNode;
+}
+
+RESTServer::enumMethods RESTServer::getEnumMethod(std::string method){
+	auto iterator=RESTServer::mapMethods.find(method);
+	RESTServer::enumMethods enumMethod=RESTServer::otherMethod;
+	if (iterator!=RESTServer::mapMethods.end()){
+		enumMethod=iterator->second;
+	}
+	return enumMethod;
+}
+
 bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::Request &request){
     Log::getLog(Log::debug,this,INFO_LOG)<<"Conexion establecida"<<std::endl;
     response.headers["Content-Type"]="application/json";
     response.code=404;
     std::vector<std::string> nodes=this->urlToNodes(request.url);
     switch(nodes.size()){
-        case 2:
-            if(nodes[0]=="database"){
-                if(nodes[1]=="session"){
-                    if(request.method=="POST"){
-                        rapidjson::Document requestDoc;
-                        requestDoc.Parse(request.body);
-                        rapidjson::Document responseDoc;
-                        response.code=this->databaseSessionPOST(responseDoc,requestDoc,request.headers);
-                        if(responseDoc.IsObject()){
-                            response.body=RESTServer::documentToString(responseDoc);
-                        }
-                    }else{
-                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
-                        response.code=405;
-                    }
-                }else if(nodes[1]=="config"){
-                    if(request.method=="GET"){
-                        response.body=this->databaseConfigGET();
-                        response.code=200;
-                    }else{
-                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
-                        response.code=405;
-                    }
-                }else if(nodes[1]=="devices"){
-                    if(request.method=="GET"){
-                        response.body=this->databaseDevicesGET();
-                        response.code=200;
-                    }else{
-                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
-                        response.code=405;
-                    }
-                }
-            }
-            break;
-        case 3:
-            if(nodes[0]=="database"){
-                if(nodes[1]=="session"){
-                    if(request.method=="GET"){
-                        rapidjson::Document responseDoc;
-                        response.code=this->databaseSessionGET(responseDoc,nodes[2],request.headers);
-                        if(responseDoc.IsObject()){
-                            response.body=RESTServer::documentToString(responseDoc);
-                        }
-                    }else if(request.method=="PATCH"){
-                        rapidjson::Document requestDoc;
-                        requestDoc.Parse(request.body);
-                        rapidjson::Document responseDoc;
-                        response.code=this->databaseSessionPATCH(responseDoc,requestDoc,nodes[2],request.headers);
-                        if(responseDoc.IsObject()){
-                            response.body=RESTServer::documentToString(responseDoc);
-                        }
-                    }else if(request.method=="DELETE"){
-                        rapidjson::Document responseDoc;
-                        response.code=this->databaseSessionDELETE(responseDoc,nodes[2],request.headers);
-                        if(responseDoc.IsObject()){
-                            response.body=RESTServer::documentToString(responseDoc);
-                        }
-                    }else{
-                        Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
-                        response.code=405;
-                    }
-                }else if(nodes[1]=="sessions"){
-                	if(nodes[2]=="count"){
-						if(request.method=="GET"){
-							rapidjson::Document responseDoc;
-							response.code=this->databaseSessionsCountGET(responseDoc);
-							if(responseDoc.IsObject()){
-								response.body=RESTServer::documentToString(responseDoc);
+        case 2:{
+        	switch(RESTServer::getEnumNode(nodes[0])){
+				case RESTServer::database:{
+					switch(RESTServer::getEnumNode(nodes[1])){
+						case RESTServer::session:{
+							switch(RESTServer::getEnumMethod(request.method)){
+								case RESTServer::post:{
+									rapidjson::Document requestDoc;
+									requestDoc.Parse(request.body);
+									rapidjson::Document responseDoc;
+									response.code=this->databaseSessionPOST(responseDoc,requestDoc,request.headers);
+									response.body=RESTServer::documentToString(responseDoc);
+								}break;
+								default:{
+									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									response.code=405;
+								}
 							}
-						}else{
-							Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
-							response.code=405;
-						}
-                	}
-                }
-            }
-            break;
+						}break;
+						case RESTServer::config:{
+							switch(RESTServer::getEnumMethod(request.method)){
+								case RESTServer::get:{
+									response.body=this->databaseConfigGET();
+									response.code=200;
+								}break;
+								default:{
+									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									response.code=405;
+								}
+							}
+						}break;
+						case RESTServer::devices:{
+							switch(RESTServer::getEnumMethod(request.method)){
+								case RESTServer::get:{
+									response.body=this->databaseDevicesGET();
+									response.code=200;
+								}break;
+								default:{
+									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									response.code=405;
+								}
+							}
+						}break;
+					}
+				}break;
+        	}
+        }break;
+        case 3:{
+        	switch(RESTServer::getEnumNode(nodes[0])){
+        		case RESTServer::database:{
+        			switch(RESTServer::getEnumNode(nodes[1])){
+        				case RESTServer::session:{
+        					switch(RESTServer::getEnumMethod(request.method)){
+        						case RESTServer::get:{
+        							rapidjson::Document responseDoc;
+        							response.code=this->databaseSessionGET(responseDoc,nodes[2],request.headers);
+        							response.body=RESTServer::documentToString(responseDoc);
+        						}break;
+        						case RESTServer::patch:{
+        							rapidjson::Document requestDoc;
+        							requestDoc.Parse(request.body);
+        							rapidjson::Document responseDoc;
+        							response.code=this->databaseSessionPATCH(responseDoc,requestDoc,nodes[2],request.headers);
+        							response.body=RESTServer::documentToString(responseDoc);
+        						}break;
+        						case RESTServer::deleete:{
+        							rapidjson::Document responseDoc;
+        							response.code=this->databaseSessionDELETE(responseDoc,nodes[2],request.headers);
+        							response.body=RESTServer::documentToString(responseDoc);
+        						}break;
+        						default:{
+        							Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+        							response.code=405;
+        						}
+        					}
+        				}break;
+        				case RESTServer::sessions:{
+        					switch(RESTServer::getEnumNode(nodes[2])){
+								case RESTServer::count:{
+									switch(RESTServer::getEnumMethod(request.method)){
+										case RESTServer::get:{
+											rapidjson::Document responseDoc;
+											response.code=this->databaseSessionsCountGET(responseDoc);
+											response.body=RESTServer::documentToString(responseDoc);
+										}break;
+										default:{
+											Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+											response.code=405;
+										}
+									}
+								}
+							}
+        				}break;
+        			}
+        		}break;
+        	}
+        }break;
     }
     return true;
 }
