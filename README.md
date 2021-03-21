@@ -9,11 +9,11 @@ Script LUA de configuaracion de la base de datos
 
 - Funciones obligatorias
 
-  - main()
+  - void main()
 
     Se ejecuta antes que cualquier otra funcion
 
-  - getConfig()
+  - long,long,long,string getConfig()
 
     Devuelve la configuracion de la base de datos
 
@@ -26,7 +26,7 @@ Script LUA de configuaracion de la base de datos
       | 3 | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
       | 4 | :white_check_mark: | String (Enum) | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
 
-  - checkDeviceUse(platformName,deviceType,deviceName)
+  - boolean checkDeviceUse(platformName,deviceType,deviceName)
 
     Selecciona si el dispositivo puede que ser usado por la Base de datos
 
@@ -42,7 +42,7 @@ Script LUA de configuaracion de la base de datos
 
       | Posicion | Obligatorio | Tipo | Valores | Description |
       | --- | --- | --- | --- | --- |
-      | 1 | :white_check_mark: | Boolean |  | Devualve si quiere que el dispositivo sea usado |
+      | 1 | :white_check_mark: | Boolean |  | Devuelve si quiere que el dispositivo sea usado |
 
 ###### GET [HOST]/database/config
 
