@@ -1,6 +1,8 @@
 #ifndef DB_H_INCLUDED
 #define DB_H_INCLUDED
 
+	#include <shared_mutex>
+
     #include"openCL.h"
 
     class DB{
@@ -23,7 +25,7 @@
         private:
 
             typedef struct{
-                std::mutex mutex;
+                std::shared_mutex mutex;
                 std::string session;
                 std::string value;
                 size_t expireTime;

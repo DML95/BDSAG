@@ -153,7 +153,8 @@ DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::intern
 bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
     Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
     bool check=false;
-    internalData.mutex.lock();
+    {//alcance para el mutex
+    	std::shared_lock readLock(internalData.mutex);
         TYPE_BUFFER time;
         pointerDevice.device->getExpireTime(time,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
@@ -165,7 +166,7 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
             data.expireTime=internalData.expireTime;
             check=true;
         }
-    internalData.mutex.unlock();
+    }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion valida: "<<check<<std::endl;
     return check;
 }
@@ -173,7 +174,8 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
 bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
     Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
     bool check=false;
-    internalData.mutex.lock();
+    {//alcance para el mutex
+        std::unique_lock writeLock(internalData.mutex);
         TYPE_BUFFER checkTime;
         pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
@@ -200,7 +202,7 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
                 }
             }
         }
-    internalData.mutex.unlock();
+    }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion modificada: "<<check<<std::endl;
     return check;
 }
@@ -208,7 +210,8 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
 bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
     Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
     bool check=false;
-    internalData.mutex.lock();
+    {//alcance para el mutex
+        std::unique_lock writeLock(internalData.mutex);
         TYPE_BUFFER checkTime;
         pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
@@ -223,7 +226,7 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
             pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
             check=checkTime;
         }
-    internalData.mutex.unlock();
+    }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion eliminada: "<<check<<std::endl;
     return check;
 }
@@ -241,7 +244,8 @@ DB::status DB::createSession(DB::data &data){
         std::string sesionExtended=session+data.userAgent;
         TYPE_BUFFER hash=DB::getHash(sesionExtended);
         DB::internalData &internalData=DB::datas[pointer];
-        internalData.mutex.lock();
+        {//alcance para el mutex
+            std::unique_lock writeLock(internalData.mutex);
             std::vector<cl::Event> events={
                 pointerDevice.device->setPostionHash(hash,pointerDevice.pointer)
             };
@@ -250,7 +254,7 @@ DB::status DB::createSession(DB::data &data){
             data.expireTime=internalData.expireTime=pointerDevice.value;
             data.session=session;
             cl::Event::waitForEvents(events);
-        internalData.mutex.unlock();
+        }
     }
     return status;
 }
