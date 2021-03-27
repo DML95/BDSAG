@@ -155,16 +155,17 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
     bool check=false;
     {//alcance para el mutex
     	std::shared_lock readLock(internalData.mutex);
-        TYPE_BUFFER time;
-        pointerDevice.device->getExpireTime(time,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
-        if(internalData.expireTime>epoch&&
-                time==internalData.expireTime&&
-                internalData.session==sessionExtended){
-            //se devuelven los valores de la sesion
-            data.value=internalData.value;
-            data.expireTime=internalData.expireTime;
-            check=true;
+        if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
+        	//se comprueva que el valor del dispostivo coincide con el de la RAM
+        	TYPE_BUFFER time;
+        	pointerDevice.device->getExpireTime(time,pointerDevice.pointer).wait();
+        	if(time==internalData.expireTime){
+				//se devuelven los valores de la sesion
+				data.value=internalData.value;
+				data.expireTime=internalData.expireTime;
+				check=true;
+        	}
         }
     }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion valida: "<<check<<std::endl;
@@ -176,31 +177,32 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
     bool check=false;
     {//alcance para el mutex
         std::unique_lock writeLock(internalData.mutex);
-        TYPE_BUFFER checkTime;
-        pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
-        if(internalData.expireTime>epoch&&
-                checkTime==internalData.expireTime&&
-                internalData.session==sessionExtended){
-            //se actualiza el tiempo de la sesion si se requere
-            check=true;
-            TYPE_BUFFER expireTime;
-            if(data.updateExpireTime){
-                expireTime=checkTime=epoch+data.expireTime;
-                pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
-            }
-            check=checkTime;
-            if(check){
-                if(data.updateExpireTime){
-                    data.expireTime=internalData.expireTime=expireTime;
-                }
-                //se actualiza el valor de la sesion o se devuelve el antiguo valor
-                if(data.updateValue){
-                    internalData.value=data.value;
-                }else{
-                    data.value=internalData.value;
-                }
-            }
+        if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
+        	//se comprueva que el valor del dispostivo coincide con el de la RAM
+        	TYPE_BUFFER checkTime;
+        	pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
+			if(checkTime==internalData.expireTime){
+				//se actualiza el tiempo de la sesion si se requere
+				check=true;
+				TYPE_BUFFER expireTime;
+				if(data.updateExpireTime){
+					expireTime=checkTime=epoch+data.expireTime;
+					pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
+				}
+				check=checkTime;
+				if(check){
+					if(data.updateExpireTime){
+						data.expireTime=internalData.expireTime=expireTime;
+					}
+					//se actualiza el valor de la sesion o se devuelve el antiguo valor
+					if(data.updateValue){
+						internalData.value=data.value;
+					}else{
+						data.value=internalData.value;
+					}
+				}
+			}
         }
     }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion modificada: "<<check<<std::endl;
@@ -212,19 +214,20 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
     bool check=false;
     {//alcance para el mutex
         std::unique_lock writeLock(internalData.mutex);
-        TYPE_BUFFER checkTime;
-        pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
         //se comprueba que la sesion haya expirado y sea valida
-        if(internalData.expireTime>epoch&&
-                checkTime==internalData.expireTime&&
-                internalData.session==sessionExtended){
-            //se devuelven los valores de la sesion
-            data.value=internalData.value;
-            data.expireTime=internalData.expireTime;
-            //se pone a 0 el tiempo de la sesion
-            checkTime=0;
-            pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
-            check=checkTime;
+        if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
+        	//se comprueva que el valor del dispostivo coincide con el de la RAM
+        	TYPE_BUFFER checkTime;
+        	pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
+        	if(checkTime==internalData.expireTime){
+				//se devuelven los valores de la sesion
+				data.value=internalData.value;
+				data.expireTime=internalData.expireTime;
+				//se pone a 0 el tiempo de la sesion
+				checkTime=0;
+				pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
+				check=checkTime;
+        	}
         }
     }
     Log::getLog(Log::debug,INFO_LOG)<<"Sesion eliminada: "<<check<<std::endl;
