@@ -226,7 +226,7 @@ Devuelve las sesiones que su valor corresponda con la expresion regular
       | sessions[].id | String |  | Identificador de la sesion |
       | sessions[].expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
       | sessions[].useragent | String |  | User-Agent del navegador del usuario |
-      | sessions[].value | String |  | Valor que se le asignado a la sesion |
+      | sessions[].value | String |  | Valor que se le ha asignado a la sesion |
   
   - 204 No Content
 
