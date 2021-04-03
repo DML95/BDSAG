@@ -222,6 +222,35 @@ int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string 
     return 200;
 }
 
+int RESTServer::databaseSessionsGET(rapidjson::Document &response,std::unordered_map<std::string,std::string> &querys){
+	std::unordered_map<std::string,std::string>::iterator queryIterator=querys.find("value");
+	if(queryIterator==querys.end()){
+		Log::getLog(Log::warn,this,INFO_LOG)<<"value no encontrado"<<std::endl;
+		RESTServer::createMessageError(response,"query: value");
+		return 400;
+	}
+	std::vector<DB::data> datas=DB::getValueSession(queryIterator->second);
+	int ret=204;
+	if(!datas.empty()){
+		ret=200;
+		auto &allocator=response.GetAllocator();
+		response.SetObject();
+		rapidjson::Document sessions;
+		sessions.SetArray();
+		for(DB::data &data:datas){
+			rapidjson::Value session;
+			session.SetObject();
+			session.AddMember("id",data.session, allocator);
+			session.AddMember("expireepoch",data.expireTime, allocator);
+			session.AddMember("useragent",data.userAgent, allocator);
+			session.AddMember("value",data.value, allocator);
+			sessions.PushBack(session, allocator);
+		}
+		response.AddMember("sessions", sessions, allocator);
+	}
+	return ret;
+}
+
 int RESTServer::databaseSessionsCountGET(rapidjson::Document &response){
 	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/sessions/count"<<std::endl;
 	auto &allocator=response.GetAllocator();
@@ -296,6 +325,19 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 								case RESTServer::get:{
 									response.body=this->databaseDevicesGET();
 									response.code=200;
+								}break;
+								default:{
+									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									response.code=405;
+								}
+							}
+						}break;
+						case RESTServer::sessions:{
+							switch(RESTServer::getEnumMethod(request.method)){
+								case RESTServer::get:{
+									rapidjson::Document responseDoc;
+									response.code=this->databaseSessionsGET(responseDoc,request.querys);
+									response.body=RESTServer::documentToString(responseDoc);
 								}break;
 								default:{
 									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;

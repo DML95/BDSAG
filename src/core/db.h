@@ -70,8 +70,11 @@
             static DB::pointerDevice getAndUpdatePostionTime(size_t expireTime,DB::status &status);
             //obtiene un hash a partir de una cadena
             static TYPE_BUFFER getHash(std::string &string);
-            //devuelve un tama�o estimado para evitar desbordamientos para el buffer
+            //devuelve un tamaño estimado para evitar desbordamientos para el buffer
             static size_t getEstimatedSizeBuffer(OpenCL &device);
+            //correccion de error producido en algunos cotroladores que genera que clFlush devuelva CL_OUT_OF_RESOURCES
+            //la correccion consiste en llamar repetidas veces a clFlush hasta que no devuelva CL_OUT_OF_RESOURCES
+            static void flush(const cl::CommandQueue &commandQueue);
             //busca una sesion por su hash y llama a una funcion cuando encuentra coincidencias
             //si se repite el hash se llama varias veces
             static DB::status findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data);
@@ -92,6 +95,8 @@
             static DB::status deleteSession(DB::data &data);
             //cuanta las sesiones activas
             static size_t countSessions();
+            //devuelve las sesiones que tengan un valor coincidente
+            static std::vector<DB::data> getValueSession(std::string regex);
     };
 
 #endif // DB_H_INCLUDED

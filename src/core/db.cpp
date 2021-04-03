@@ -6,6 +6,7 @@
 #include"../utils/exception.h"
 
 #include<set>
+#include <regex>
 
 #include"../apiOS.h"
 
@@ -99,6 +100,21 @@ size_t DB::getEstimatedSizeBuffer(OpenCL &device){
     return size;
 }
 
+void DB::flush(const cl::CommandQueue &commandQueue){
+	bool run=true;
+	do{
+		try{
+			commandQueue.flush();
+			run=false;
+		}catch (cl::Error &e) {
+			Log::getLog(Log::debug,INFO_LOG)<<"Error en clFlush: "<<e.err()<<std::endl;
+			if(e.err()!=CL_OUT_OF_RESOURCES){
+				throw e;
+			}
+		}
+	}while(run);
+}
+
 DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data){
     Log::getLog(Log::debug,INFO_LOG)<<"Buscando una sesion\n\tSesion: "<<data.session<<
             "\n\tUserAgent: "<<data.userAgent<<std::endl;
@@ -119,7 +135,7 @@ DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::intern
         const cl::CommandQueue &commandQueue=device.getCommandQueue();
         dataDevice.structPostionsMap=(DB::structPostions*)commandQueue.enqueueMapBuffer(
                 dataDevice.buffer,CL_FALSE,CL_MAP_READ,0,size,&dataDevice.events,&dataDevice.events[0]);
-        commandQueue.flush();
+        DB::flush(commandQueue);
     }
     //comprobamos si alguna busqueda es correcta
     cont=0;
@@ -158,9 +174,9 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
         //se comprueba que la sesion haya expirado y sea valida
         if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
         	//se comprueva que el valor del dispostivo coincide con el de la RAM
-        	TYPE_BUFFER time;
-        	pointerDevice.device->getExpireTime(time,pointerDevice.pointer).wait();
-        	if(time==internalData.expireTime){
+        	TYPE_BUFFER deviceTime;
+        	pointerDevice.device->getExpireTime(deviceTime,pointerDevice.pointer).wait();
+        	if(deviceTime==internalData.expireTime){
 				//se devuelven los valores de la sesion
 				data.value=internalData.value;
 				data.expireTime=internalData.expireTime;
@@ -180,17 +196,17 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
         //se comprueba que la sesion haya expirado y sea valida
         if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
         	//se comprueva que el valor del dispostivo coincide con el de la RAM
-        	TYPE_BUFFER checkTime;
-        	pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
-			if(checkTime==internalData.expireTime){
+        	TYPE_BUFFER deviceTime;
+        	pointerDevice.device->getExpireTime(deviceTime,pointerDevice.pointer).wait();
+			if(deviceTime==internalData.expireTime){
 				//se actualiza el tiempo de la sesion si se requere
 				check=true;
 				TYPE_BUFFER expireTime;
 				if(data.updateExpireTime){
-					expireTime=checkTime=epoch+data.expireTime;
-					pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
+					expireTime=deviceTime=epoch+data.expireTime;
+					pointerDevice.device->checkAndSetExpireTime(deviceTime,internalData.expireTime,pointerDevice.pointer).wait();
 				}
-				check=checkTime;
+				check=deviceTime;
 				if(check){
 					if(data.updateExpireTime){
 						data.expireTime=internalData.expireTime=expireTime;
@@ -217,16 +233,17 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
         //se comprueba que la sesion haya expirado y sea valida
         if(internalData.expireTime>epoch&&internalData.session==sessionExtended){
         	//se comprueva que el valor del dispostivo coincide con el de la RAM
-        	TYPE_BUFFER checkTime;
-        	pointerDevice.device->getExpireTime(checkTime,pointerDevice.pointer).wait();
-        	if(checkTime==internalData.expireTime){
+        	TYPE_BUFFER deviceTime;
+        	pointerDevice.device->getExpireTime(deviceTime,pointerDevice.pointer).wait();
+        	if(deviceTime==internalData.expireTime){
 				//se devuelven los valores de la sesion
 				data.value=internalData.value;
 				data.expireTime=internalData.expireTime;
 				//se pone a 0 el tiempo de la sesion
-				checkTime=0;
-				pointerDevice.device->checkAndSetExpireTime(checkTime,internalData.expireTime,pointerDevice.pointer).wait();
-				check=checkTime;
+				deviceTime=0;
+				internalData.expireTime=deviceTime;
+				pointerDevice.device->checkAndSetExpireTime(deviceTime,internalData.expireTime,pointerDevice.pointer).wait();
+				check=deviceTime;
         	}
         }
     }
@@ -281,7 +298,7 @@ DB::status DB::deleteSession(DB::data &data){
 }
 
 size_t DB::countSessions(){
-	Log::getLog(Log::debug,INFO_LOG)<<"Contado el numaro de sesiones"<<std::endl;
+	Log::getLog(Log::debug,INFO_LOG)<<"Contado el numero de sesiones"<<std::endl;
 	size_t epoch=Utils::getEpoch();
 	std::vector<size_t> counts(DB::openCl.size());
 	std::vector<cl::Event> events(DB::openCl.size());
@@ -296,4 +313,30 @@ size_t DB::countSessions(){
 		count+=val;
 	}
 	return count;
+}
+
+std::vector<DB::data> DB::getValueSession(std::string regexStr){
+	Log::getLog(Log::debug,INFO_LOG)<<"Buscando sesiones con el valor: "<<regexStr<<std::endl;
+	std::vector<DB::data> datas;
+	size_t epoch=Utils::getEpoch();
+	std::regex regex(regexStr);
+	for(size_t cont=0,size=DB::datas.size();cont<size;cont++){
+		DB::internalData &internalData=DB::datas[cont];
+		std::shared_lock readLock(internalData.mutex);
+		if(internalData.expireTime>epoch&&std::regex_match(internalData.value,regex)){
+			//se comprueva que el valor del dispostivo coincide con el de la RAM
+			DB::pointerDevice pointerDevice=DB::pointerToPointerDevice(cont);
+			TYPE_BUFFER deviceTime;
+			pointerDevice.device->getExpireTime(deviceTime,pointerDevice.pointer).wait();
+			if(deviceTime==internalData.expireTime){
+				DB::data data;
+				data.expireTime=internalData.expireTime;
+				data.session=internalData.session.substr(0,Config::getSizeSesion());
+				data.userAgent=internalData.session.substr(Config::getSizeSesion(),std::string::npos);
+				data.value=internalData.value;
+				datas.push_back(data);
+			}
+		}
+	}
+	return datas;
 }

@@ -100,7 +100,7 @@ Crea una sesion
 	  | Clave | Tipo | Valores | Description |
 	  | --- | --- | --- | --- |
       | id | String |  | Identificador de la sesion |
-      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
 	  
   - 507 Insufficient Storage
 
@@ -128,7 +128,7 @@ Busca una sesion por un identificador
       | Clave | Tipo | Valores | Description |
 	  | --- | --- | --- | --- |
       | value | String |  | Valor de la sesion |
-      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
   
   - 404 Not Found
   
@@ -157,7 +157,7 @@ Modifica una sesion
 	  | Clave | Tipo | Valores | Description |
 	  | --- | --- | --- | --- |
       | value | String |  | Valor de la sesion |
-      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
 	  
   - 404 Not Found
 
@@ -185,7 +185,7 @@ Elimina una sesion por un identificador
       | Clave | Tipo | Valores | Description |
 	  | --- | --- | --- | --- |
       | value | String |  | Valor de la sesion |
-      | expireepoch | String |  | Tiempo Epoch en segundos en el que expira la sesion |
+      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
   
   - 404 Not Found
 
@@ -203,6 +203,32 @@ Cuanta el numero de sesiones creadas
       | --- | --- | --- | --- |
       | count | Long |  | Numero de sesiones creadas |
       | maxcount | Long |  | Numero maximo de sesiones (sizeDB de config.json) |
+      
+###### GET [HOST]/database/sessions?value={regex}
+
+Devuelve las sesiones que su valor corresponda con la expresion regular
+
+- Entrada
+  - Query
+
+    | Clave | Obligatorio | Tipo | Valores | Description |
+    | --- | --- | --- | --- | --- |
+    | value |  :white_check_mark: | String |  | Expresion regular usada como filtro por valor |
+    
+    
+- Salida
+  - 200 OK
+    - Body
+
+      | Clave | Tipo | Valores | Description |
+	  | --- | --- | --- | --- |
+      | sessions[] | Array |  | Sesiones conicidentes con la espresion regular |
+      | sessions[].id | String |  | Identificador de la sesion |
+      | sessions[].expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
+      | sessions[].useragent | String |  | User-Agent del navegador del usuario |
+      | sessions[].value | String |  | Valor que se le asignado a la sesion |
+  
+  - 204 No Content
 
 ###### Requistos
 

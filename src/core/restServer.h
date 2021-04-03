@@ -56,6 +56,9 @@
             //GET /database/sessions/count
             //cuanta el numero de sesiones creadas
             int databaseSessionsCountGET(rapidjson::Document &response);
+            //GET /database/sessions?value={regex}
+            //devuelve las sesiones que su valor corresponda con la expresion regular
+            int databaseSessionsGET(rapidjson::Document &response,std::unordered_map<std::string,std::string> &querys);
             //crea un json de error
             static void createMessageError(rapidjson::Document &document,std::string error);
             //devuelve el nodo en caso de no encontrarlo -1
