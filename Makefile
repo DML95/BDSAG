@@ -35,7 +35,7 @@ define RM_OS
 	del /Q /S $(subst /,\,$(1))
 endef
 else ifeq ($(OS_NAME),Linux)
-LDLIBS+=-llua5.3
+LDLIBS+=-llua5.3 -lpthread
 PROGRAM:=$(addsuffix .elf,$(PROGRAM))
 define MKDIR_OS
 	-mkdir -p $(1)
