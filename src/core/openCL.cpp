@@ -36,12 +36,12 @@ OpenCL::StaticClass OpenCL::staticClass;
 #pragma message BUILD_OPTIONS
 
 OpenCL::StaticClass::StaticClass(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Iniciando nucleo OpenCL"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Iniciando nucleo OpenCL");
     size_t maxAllocSizeAllDevices=OpenCL::validAndAddDevices();
     if(!maxAllocSizeAllDevices)throw Exception(0,"Ninguna dispostivo se ha podido iniciar",INFO_LOG);
     size_t sizeDB=Config::getSizeDB();
-    Log::getLog(Log::info,INFO_LOG)<<"Total asignacion entre buffers de dispositivos: "<<Utils::bytesToString(maxAllocSizeAllDevices)<<std::endl;
-    Log::getLog(Log::info,INFO_LOG)<<"Total asignacion entre buffers de requerido: "<<Utils::bytesToString(sizeDB*sizeof(TYPE_BUFFER))<<std::endl;
+    Log::log(Log::info,INFO_LOG,"Total asignacion entre buffers de dispositivos:",Utils::bytesToString(maxAllocSizeAllDevices));
+    Log::log(Log::info,INFO_LOG,"Total asignacion entre buffers de requerido:",Utils::bytesToString(sizeDB*sizeof(TYPE_BUFFER)));
     if(maxAllocSizeAllDevices<sizeDB*sizeof(TYPE_BUFFER))throw Exception(0,"Los dispositivos no cuentan con sufiente VRAM",INFO_LOG);
     std::vector<cl::Event> events;
     for(OpenCL &openCL:OpenCL::devices){
@@ -56,14 +56,14 @@ bool OpenCL::checkExtensions(cl::Device &device){
     std::string extensions=device.getInfo<CL_DEVICE_EXTENSIONS>();
     for(std::string extension:OpenCL::extensionList){
         bool check=extensions.find(extension)!= std::string::npos;
-        Log::getLog(Log::info,device(),INFO_LOG)<<extension<<": "<<check<<std::endl;
+        Log::log(Log::info,device(),INFO_LOG,extension,':',check);
         if(!check)checks=false;
     }
     return checks;
 }
 
 size_t OpenCL::validAndAddDevices(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Listando dispositivos"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Listando dispositivos");
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     size_t maxAllocSizeAllDevices=0;
@@ -71,27 +71,27 @@ size_t OpenCL::validAndAddDevices(){
     //listando platarformas
     for(cl::Platform &platform:platforms){
     	std::string platformName=platform.getInfo<CL_PLATFORM_NAME>();
-        Log::getLog(Log::info,INFO_LOG)<<"CL_PLATFORM_NAME: "<<platformName<<std::endl;
+    	Log::log(Log::info,INFO_LOG,"CL_PLATFORM_NAME:",platformName);
         try{
         	std::vector<cl::Device> devices;
 			platform.getDevices(CL_DEVICE_TYPE_ALL,&devices);
 			//listando GPUs de las platarformas
 			for(cl::Device &device:devices){
 				std::string deviceType=OpenCL::deviceTipeName[device.getInfo<CL_DEVICE_TYPE>()];
-				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_TYPE: "<<deviceType<<std::endl;
+				Log::log(Log::info,device(),INFO_LOG,"CL_DEVICE_TYPE:",deviceType);
 				std::string deviceName=device.getInfo<CL_DEVICE_NAME>();
-				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_NAME: "<<deviceName<<std::endl;
+				Log::log(Log::info,device(),INFO_LOG,"CL_DEVICE_NAME:",deviceName);
 				size_t maxAllocSize=device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
-				Log::getLog(Log::info,device(),INFO_LOG)<<"CL_DEVICE_MAX_MEM_ALLOC_SIZE: "<<Utils::bytesToString(maxAllocSize)<<std::endl;
+				Log::log(Log::info,device(),INFO_LOG,"CL_DEVICE_MAX_MEM_ALLOC_SIZE:",Utils::bytesToString(maxAllocSize));
 				if(OpenCL::checkExtensions(device)&&
 						Config::checkDeviceUse(platformName,deviceType, deviceName)){
 					OpenCL::devices.push_back(OpenCL(device,source));
 					maxAllocSizeAllDevices+=maxAllocSize;
-					Log::getLog(Log::info,device(),INFO_LOG)<<"Dispositivo agregado"<<std::endl;
-				}else Log::getLog(Log::warn,device(),INFO_LOG)<<"Dispositivo no valido"<<std::endl;
+					Log::log(Log::info,device(),INFO_LOG,"Dispositivo agregado");
+				}else Log::log(Log::warn,device(),INFO_LOG,"Dispositivo no valido");
 			}
         }catch(cl::Error &e){
-        	Log::getLog(Log::warn,INFO_LOG)<<"No se han podido leer los datos de la plataforma"<<std::endl;
+        	Log::log(Log::warn,INFO_LOG,"No se han podido leer los datos de la plataforma");
         }
     }
     return maxAllocSizeAllDevices;
@@ -103,16 +103,16 @@ OpenCL::OpenCL(cl::Device &device,std::string &source):
         commandQueue(context,device,CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
         program(context,source),
         sizeBuffers(0){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Dispostivo iniciando"<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Dispostivo iniciando");
     this->buildProgram();
 }
 
 void OpenCL::buildProgram(){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Compilando el programa"<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Compilando el programa");
     try{
         this->program.build(BUILD_OPTIONS);
     }catch(cl::Error &e){
-        Log::getLog(Log::fatal,this->device(),INFO_LOG)<<"Log error:\n"<<this->program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<std::endl;
+    	Log::log(Log::fatal,this->device(),INFO_LOG,"Log error:\n",this->program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device));
         throw e;
     }
 }
@@ -122,9 +122,9 @@ void OpenCL::createPrimaryBuffers(size_t sizeDB,size_t devicesMaxBuffer){
     //creamos el buffer de hash
     //regla de 3 para calcular la reparticion de la memoria entre los dispostivos
     this->sizeBuffers=sizeDB*maxAllocSize/devicesMaxBuffer;
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Nuemro de elementos asignados: "<<this->sizeBuffers<<std::endl;
+    Log::log(Log::debug,this->device(),INFO_LOG,"Nuemro de elementos asignados:",this->sizeBuffers);
     size_t size=this->sizeBuffers*sizeof(TYPE_BUFFER);
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Creado buffer hash y time: "<<Utils::bytesToString(size)<<std::endl;
+    Log::log(Log::debug,this->device(),INFO_LOG,"Creado buffer hash y time:",Utils::bytesToString(size));
     this->hash=cl::Buffer(
             this->context,
             CL_MEM_READ_WRITE,
@@ -136,7 +136,7 @@ void OpenCL::createPrimaryBuffers(size_t sizeDB,size_t devicesMaxBuffer){
 }
 
 void OpenCL::initPrimaryBuffers(std::vector<cl::Event> &events){
-    Log::getLog(Log::trace,this->device(),INFO_LOG)<<"Iniciando bufferes primarios"<<std::endl;
+	Log::log(Log::trace,this->device(),INFO_LOG,"Iniciando bufferes primarios");
     //iniciamos el buffer de hash
     events.push_back(OpenCL::setBuffer(this->hash,0));
     //iniciamos el buffer de time
@@ -145,7 +145,7 @@ void OpenCL::initPrimaryBuffers(std::vector<cl::Event> &events){
 
 cl::Event OpenCL::setBuffer(cl::Buffer &buffer,char value){
     size_t size=buffer.getInfo<CL_MEM_SIZE>();
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Iniciando buffer: "<<Utils::bytesToString(size)<<std::endl;
+    Log::log(Log::debug,this->device(),INFO_LOG,"Iniciando buffer:",Utils::bytesToString(size));
     cl::Kernel kernel(this->program,"setBuffer");
     kernel.setArg(0,buffer);
     kernel.setArg(1,value);
@@ -168,12 +168,12 @@ const cl::CommandQueue& OpenCL::getCommandQueue(){
 
 cl::Buffer OpenCL::createBuffer(size_t size){
     cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,size);
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Creado buffer: "<<Utils::bytesToString(size)<<std::endl;
+    Log::log(Log::debug,this->device(),INFO_LOG,"Creado buffer:",Utils::bytesToString(size));
     return buffer;
 }
 
 cl::Event OpenCL::getPostionsHash(cl::Buffer &positions,TYPE_BUFFER hash){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Opteniendo las posiciones del HASH: "<<hash<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Opteniendo las posiciones del HASH:",hash);
     //se establece el buffer a 0xff
     std::vector<cl::Event> events={
         this->setBuffer(positions,0xff)
@@ -190,7 +190,7 @@ cl::Event OpenCL::getPostionsHash(cl::Buffer &positions,TYPE_BUFFER hash){
 }
 
 cl::Event OpenCL::getPostionExpireTime(size_t &position,size_t epoch,size_t expireTime){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Opteniendo una posicion de tiempo libre\n\tEpoch: "<<epoch<<"\n\tTiempo de expiracion: "<<expireTime<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Opteniendo una posicion de tiempo libre\n\tEpoch:",epoch,"\n\tTiempo de expiracion:",expireTime);
     //se establece el position a 0xff
     position=std::numeric_limits<size_t>::max();
     cl::Buffer positionBuffer=this->createBuffer(sizeof(size_t));
@@ -207,7 +207,7 @@ cl::Event OpenCL::getPostionExpireTime(size_t &position,size_t epoch,size_t expi
 }
 
 cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl::Event> *events){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Opteniendo un tiempo en la posicion: "<<position<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Opteniendo un tiempo en la posicion:",position);
     cl::Buffer value=this->createBuffer(sizeof(TYPE_BUFFER));
     cl::Kernel kernel(this->program,"getExpireTime");
     kernel.setArg(0,value);
@@ -220,7 +220,7 @@ cl::Event OpenCL::getExpireTime(TYPE_BUFFER &time,size_t position,std::vector<cl
 }
 
 cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTime,size_t position,std::vector<cl::Event> *events){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo un tiempo("<<checkTime<<") en la posicion: "<<position<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Estableciendo un tiempo(",checkTime,") en la posicion:",position);
     cl::Buffer checkTimeBuffer=this->createBuffer(sizeof(TYPE_BUFFER));
     std::vector<cl::Event> internalEvents(1);
     this->commandQueue.enqueueWriteBuffer(checkTimeBuffer,CL_FALSE,0,sizeof(TYPE_BUFFER),&checkTime,events,&internalEvents[0]);
@@ -235,14 +235,14 @@ cl::Event OpenCL::checkAndSetExpireTime(TYPE_BUFFER &checkTime,TYPE_BUFFER oldTi
 }
 
 cl::Event OpenCL::setPostionHash(TYPE_BUFFER hash,size_t position,std::vector<cl::Event> *events){
-    Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Estableciendo el hash("<<hash<<") en la posicion: "<<position<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Estableciendo el hash(",hash,") en la posicion:",position);
     cl::Event event;
     this->commandQueue.enqueueWriteBuffer(this->hash,CL_FALSE,sizeof(TYPE_BUFFER)*position,sizeof(TYPE_BUFFER),&hash,events,&event);
     return event;
 }
 
 cl::Event OpenCL::getUseCount(size_t &count,size_t epoch,std::vector<cl::Event> *events){
-	Log::getLog(Log::debug,this->device(),INFO_LOG)<<"Contando sesiones en uso"<<std::endl;
+	Log::log(Log::debug,this->device(),INFO_LOG,"Contando sesiones en uso");
 	count=0;
 	std::vector<cl::Event> internalEvents(1);
 	cl::Buffer countBuffer=this->createBuffer(sizeof(size_t));

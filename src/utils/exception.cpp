@@ -27,9 +27,9 @@ Exception::Exception(int code,std::string message,const void *id,std::string fun
 
 void Exception::printLog(Log::type type){
     if(this->id){
-        Log::getLog(type,this->id,function,line)<<"Excepcion\n\tcodigo: "<<code<<"\n\tmensaje: "<<message<<std::endl;
+    	Log::log(type,this->id,function,line,"Excepcion\n\tcodigo:",code,"\n\tmensaje:",message);
     }else{
-        Log::getLog(type,function,line)<<"Excepcion\n\tcodigo: "<<code<<"\n\tmensaje: "<<message<<std::endl;
+    	Log::log(type,function,line,"Excepcion\n\tcodigo:",code,"\n\tmensaje:",message);
     }
 }
 

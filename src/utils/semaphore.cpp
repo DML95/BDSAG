@@ -3,16 +3,16 @@
 
 Semaphore::Semaphore():
         semaphore(){
-    Log::getLog(Log::trace,this,INFO_LOG)<<"Loadding"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Loadding");
 }
 
 void Semaphore::wait(){
-    Log::getLog(Log::trace,this,INFO_LOG)<<"Wait"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Wait");
     std::unique_lock<std::mutex> uniqueLock(this->mutex);
     this->semaphore.wait(uniqueLock);
 }
 
 void Semaphore::notify_all(){
-    Log::getLog(Log::trace,this,INFO_LOG)<<"Notify_all"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Notify_all");
     this->semaphore.notify_all();
 }

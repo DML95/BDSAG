@@ -15,10 +15,10 @@ std::mt19937 Utils::rng;
 Utils::StaticClass Utils::staticClass;
 
 Utils::StaticClass::StaticClass(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Iniciando Utils"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Iniciando Utils");
     Utils::getPathExecutable();
-    Log::getLog(Log::trace,INFO_LOG)<<"Ruta del ejecutable: "<<Utils::pathExecutable<<std::endl;
-    Log::getLog(Log::trace,INFO_LOG)<<"Iniciando el generador de numeros aleatorios"<<std::endl;
+    Log::log(Log::trace,INFO_LOG,"Ruta del ejecutable:",Utils::pathExecutable);
+    Log::log(Log::trace,INFO_LOG,"Iniciando el generador de numeros aleatorios");
     Utils::rng=std::mt19937(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
@@ -55,7 +55,7 @@ std::string Utils::bytesToString(size_t bytes){
 }
 
 std::string Utils::getDataFile(std::string fileName,bool pathExecutable){
-    Log::getLog(Log::debug,INFO_LOG)<<"Leyendo el archivo: "<<fileName<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Leyendo el archivo:",fileName);
     std::string pathName=pathExecutable?Utils::pathExecutable+fileName:fileName;
     std::fstream file(pathName,std::ifstream::in|std::ios::binary|std::ios::ate);
     if(!file.is_open())throw Exception(0,"No se ha podido abrir el archivo: "+fileName,INFO_LOG);
@@ -68,13 +68,13 @@ std::string Utils::getDataFile(std::string fileName,bool pathExecutable){
 }
 
 size_t Utils::getRandom(size_t max){
-    Log::getLog(Log::trace,INFO_LOG)<<"Opteniendo un valor aleatorio"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Opteniendo un valor aleatorio");
     std::uniform_int_distribution<std::mt19937::result_type> random(0,max);
     return random(Utils::rng);
 }
 
 std::string Utils::getRandom(std::string chars,size_t size){
-    Log::getLog(Log::trace,INFO_LOG)<<"Opteniendo un string aleatorio"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Opteniendo un string aleatorio");
     std::string out(size,0);
     size_t sizeChars=chars.size()-1;
     if(0>sizeChars)throw Exception(0,"Longitud de chars invalida",INFO_LOG);

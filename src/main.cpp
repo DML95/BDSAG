@@ -15,17 +15,17 @@ static Semaphore closeSemaphore;
 
 //evento de cerrado de consola
 static void eventClose() noexcept{
-    Log::getLog(Log::debug,INFO_LOG)<<"Evento de finalizacion"<<std::endl;
+    Log::log(Log::debug,INFO_LOG,"Evento de finalizacion");
     closeSemaphore.notify_all();
 }
 
 //inicio de programa
 int main(){
-    Log::getLog(Log::info,INFO_LOG)<<"Iniciando BDSAG"<<std::endl;
+    Log::log(Log::info,INFO_LOG,"Iniciando BDSAG");
     Console::setCloseEvent(eventClose);
     RESTServer restServer;
-    Log::getLog(Log::info,INFO_LOG)<<"BDSAG Iniciada pulse Ctrl+C para finalizar"<<std::endl;
+    Log::log(Log::info,INFO_LOG,"BDSAG Iniciada pulse Ctrl+C para finalizar");
     closeSemaphore.wait();
-    Log::getLog(Log::info,INFO_LOG)<<"Finalizando BDSAG"<<std::endl;
+    Log::log(Log::info,INFO_LOG,"Finalizando BDSAG");
     return 0;
 }

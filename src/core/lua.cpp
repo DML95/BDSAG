@@ -3,19 +3,19 @@
 #include"../utils/exception.h"
 
 Lua::Lua(){
-	Log::getLog(Log::trace,this,INFO_LOG)<<"Iniciando lua"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Iniciando lua");
 	this->lua=::luaL_newstate();
 	if(!this->lua)throw Exception(0,"No se ha podido iniciar lua",this,INFO_LOG);
 	::luaL_openlibs(this->lua);
 }
 
 Lua::~Lua() {
-	Log::getLog(Log::trace,this,INFO_LOG)<<"Finalizando lua"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Finalizando lua");
 	::lua_close(this->lua);
 }
 
 void Lua::setCode(std::string code){
-	Log::getLog(Log::trace,this,INFO_LOG)<<"Cargando codigo lua"<<std::endl;
+	Log::log(Log::trace,this,INFO_LOG,"Cargando codigo lua");
 	if(int ret=::luaL_loadstring(this->lua,code.data())){
 		throw Exception(ret,"No se ha podido cargar el codigo lua",this,INFO_LOG);
 	}

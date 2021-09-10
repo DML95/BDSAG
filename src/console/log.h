@@ -39,9 +39,30 @@
             //establece el nivel maximo a mostrar
             static void setVisibility(Log::type type);
             static void setVisibility(std::string type);
-            //devuelve un ostream de log
-            static std::ostream& getLog(Log::type type,std::string function,int line);
-            static std::ostream& getLog(Log::type type,const void* id,std::string function,int line);
+
+            //envia los logs
+            template<typename... T> static void log(const Log::type type,const void* id,const std::string &function,int line,const T&... logs);
+            template<typename... T> static void log(const Log::type type,const std::string &function,int line,const T&... logs);
     };
+
+    template<typename... T> void Log::log(const Log::type type,const void* id,const std::string &function,int line,const T&... logs){
+    	std::ostream &os=std::clog;
+    	if(Log::typeValue.load()>=type){
+			os<<'['<<Log::typeStr[type]<<'|'<<function<<'|'<<line<<'|';
+			if(id)os<<"ID("<<id<<')';
+			os<<"] ";
+    		((os<<logs<<' '),...);
+    		os<<std::endl;
+    	}
+    }
+
+    template<typename... T> void Log::log(const Log::type type,const std::string &function,int line,const T&... logs){
+        std::ostream &os=std::clog;
+        if(Log::typeValue.load()>=type){
+        	os<<'['<<Log::typeStr[type]<<'|'<<function<<'|'<<line<<"] ";
+        	((os<<logs<<' '),...);
+        	os<<std::endl;
+        }
+    }
 
 #endif // LOG_H_INCLUDED

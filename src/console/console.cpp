@@ -8,7 +8,7 @@ std::atomic<Console::event> Console::function(0);
 struct Console::plataformFunctions{
     #ifdef _WIN32
         static BOOL handlerRoutine(DWORD dwCtrlType){
-            Log::getLog(Log::trace,INFO_LOG)<<"Llamada a handlerRoutine"<<std::endl;
+            Log::log(Log::trace,INFO_LOG,"Llamada a handlerRoutine");
             Console::event function=Console::function.load();
             function();
             return true;
@@ -17,7 +17,7 @@ struct Console::plataformFunctions{
 	#elif __linux__
 
         static void closeEvent(sig_atomic_t s){
-        	Log::getLog(Log::trace,INFO_LOG)<<"Llamada a closeEvent"<<std::endl;
+        	Log::log(Log::trace,INFO_LOG,"Llamada a closeEvent");
         	Console::event function=Console::function.load();
         	function();
         }
@@ -26,7 +26,7 @@ struct Console::plataformFunctions{
 };
 
 void Console::setCloseEvent(Console::event function){
-    Log::getLog(Log::trace,INFO_LOG)<<"Puntero: "<<(void*)function<<std::endl;
+    Log::log(Log::trace,INFO_LOG,"Puntero:",(void*)function);
     Console::function.store(function);
     #ifdef _WIN32
         ::SetConsoleCtrlHandler(Console::plataformFunctions::handlerRoutine,(bool)function);

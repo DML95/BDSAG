@@ -31,7 +31,7 @@ void Log::setVisibility(Log::type type){
 }
 
 void Log::setVisibility(std::string type){
-    Log::getLog(Log::info,INFO_LOG)<<"Estableciendo visivilidad de logs: "<<type<<std::endl;
+    Log::log(Log::info,INFO_LOG,"Estableciendo visivilidad de logs:",type);
     int typeVal=-1;
     for(int cont=0,size=Log::mapTypeStr.size();cont<size&&typeVal<0;cont++){
     	if(!type.compare(Log::mapTypeStr[cont])){
@@ -42,16 +42,4 @@ void Log::setVisibility(std::string type){
         throw Exception(0,"valor de log invalido",INFO_LOG);
     }
     Log::typeValue.store(typeVal);
-}
-
-std::ostream& Log::getLog(Log::type type,std::string function,int line){
-    std::ostream &ostream=Log::getOstream(type);
-    ostream<<'['<<Log::typeStr[type]<<'|'<<function<<'|'<<line<<"] ";
-    return ostream;
-}
-
-std::ostream& Log::getLog(Log::type type,const void* id,std::string function,int line){
-    std::ostream &ostream=Log::getOstream(type);
-    ostream<<'['<<Log::typeStr[type]<<'|'<<function<<'|'<<line<<"|ID("<<id<<")] ";
-    return ostream;
 }

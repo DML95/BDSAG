@@ -34,7 +34,7 @@ std::vector<std::string> RESTServer::urlToNodes(std::string &url){
     do{
         postionTemp=url.find_first_of('/',postion);
         std::string value=url.substr(postion,postionTemp-postion);
-        Log::getLog(Log::trace,this,INFO_LOG)<<"Agregando nodo: "<<value<<std::endl;
+        Log::log(Log::trace,this,INFO_LOG,"Agregando nodo:",value);
         nodes.push_back(value);
         postion=postionTemp+1;
         run=postionTemp!=std::string::npos;
@@ -60,7 +60,7 @@ void RESTServer::createMessageError(rapidjson::Document &document,std::string er
 }
 
 std::string RESTServer::databaseConfigGET(){
-	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/config"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"GET /database/config");
 	rapidjson::Document response;
 	auto &allocator=response.GetAllocator();
 	response.SetObject();
@@ -72,7 +72,7 @@ std::string RESTServer::databaseConfigGET(){
 }
 
 std::string RESTServer::databaseDevicesGET(){
-	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/devices"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"GET /database/devices");
 	rapidjson::Document response;
 	auto &allocator=response.GetAllocator();
 	response.SetObject();
@@ -92,35 +92,35 @@ std::string RESTServer::databaseDevicesGET(){
 }
 
 int RESTServer::databaseSessionPOST(rapidjson::Document &response,rapidjson::Document &request,std::unordered_map<std::string,std::string> &headers){
-    Log::getLog(Log::debug,this,INFO_LOG)<<"POST /database/session"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"POST /database/session");
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
     if(headerIterator==headers.end()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"User-Agent no encontrado");
         RESTServer::createMessageError(response,"header: User-Agent");
         return 400;
     }
     DB::data data;
     data.userAgent=headerIterator->second;
     if(!request.IsObject()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"JSON invalido"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"JSON invalido");
         RESTServer::createMessageError(response,"JSON");
         return 400;
     }
     rapidjson::Value value;
     if(!Utils::isMember(value,request,"expiretime")||!value.IsInt64()||(data.expireTime=value.GetInt64())<=0){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"expiretime invalido"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"expiretime invalido");
         RESTServer::createMessageError(response,"JSON: expiretime");
         return 400;
     }
     if(!Utils::isMember(value,request,"value")||!value.IsString()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"value invalido"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"value invalido");
         RESTServer::createMessageError(response,"JSON: value");
         return 400;
     }
     data.value=value.GetString();
     switch(DB::createSession(data)){
         case DB::dbFull:
-            Log::getLog(Log::warn,this,INFO_LOG)<<"base de datos llena"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"base de datos llena");
             return 507;
     }
     auto &allocator=response.GetAllocator();
@@ -131,10 +131,10 @@ int RESTServer::databaseSessionPOST(rapidjson::Document &response,rapidjson::Doc
 }
 
 int RESTServer::databaseSessionGET(rapidjson::Document &response,std::string &id,std::unordered_map<std::string,std::string> &headers){
-    Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/session/{id}"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"GET /database/session/{id}");
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
     if(headerIterator==headers.end()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"User-Agent no encontrado");
         RESTServer::createMessageError(response,"header: User-Agent");
         return 400;
     }
@@ -143,7 +143,7 @@ int RESTServer::databaseSessionGET(rapidjson::Document &response,std::string &id
     data.session=id;
     switch(DB::getSession(data)){
         case DB::sessionNotFound:
-            Log::getLog(Log::warn,this,INFO_LOG)<<"sesion no encontrada"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"sesion no encontrada");
             return 404;
     }
     auto &allocator=response.GetAllocator();
@@ -154,17 +154,17 @@ int RESTServer::databaseSessionGET(rapidjson::Document &response,std::string &id
 }
 
 int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Document &request,std::string &id,std::unordered_map<std::string,std::string> &headers){
-    Log::getLog(Log::debug,this,INFO_LOG)<<"PATCH /database/session"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"PATCH /database/session");
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
     if(headerIterator==headers.end()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"User-Agent no encontrado");
         RESTServer::createMessageError(response,"header: User-Agent");
         return 400;
     }
     DB::data data;
     data.userAgent=headerIterator->second;
     if(!request.IsObject()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"JSON invalido"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"JSON invalido");
         RESTServer::createMessageError(response,"JSON");
         return 400;
     }
@@ -172,7 +172,7 @@ int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Do
     data.updateExpireTime=Utils::isMember(value,request,"expiretime");
     if(data.updateExpireTime){
         if(!value.IsInt64()||(data.expireTime=value.GetInt64())<=0){
-            Log::getLog(Log::warn,this,INFO_LOG)<<"expiretime invalido"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"expiretime invalido");
             RESTServer::createMessageError(response,"JSON: expiretime");
             return 400;
         }
@@ -180,7 +180,7 @@ int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Do
     data.updateValue=Utils::isMember(value,request,"value");
     if(data.updateValue){
         if(!value.IsString()){
-            Log::getLog(Log::warn,this,INFO_LOG)<<"value invalido"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"value invalido");
             RESTServer::createMessageError(response,"JSON: value");
             return 400;
         }
@@ -189,7 +189,7 @@ int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Do
     data.session=id;
     switch(DB::patchSession(data)){
         case DB::sessionNotFound:
-            Log::getLog(Log::warn,this,INFO_LOG)<<"sesion no encontrada"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"sesion no encontrada");
             return 404;
     }
     auto &allocator=response.GetAllocator();
@@ -200,10 +200,10 @@ int RESTServer::databaseSessionPATCH(rapidjson::Document &response,rapidjson::Do
 }
 
 int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string &id,std::unordered_map<std::string,std::string> &headers){
-    Log::getLog(Log::debug,this,INFO_LOG)<<"DELETE /database/session/{id}"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"DELETE /database/session/{id}");
     std::unordered_map<std::string,std::string>::iterator headerIterator=headers.find("User-Agent");
     if(headerIterator==headers.end()){
-        Log::getLog(Log::warn,this,INFO_LOG)<<"User-Agent no encontrado"<<std::endl;
+    	Log::log(Log::warn,this,INFO_LOG,"User-Agent no encontrado");
         RESTServer::createMessageError(response,"header: User-Agent");
         return 400;
     }
@@ -212,7 +212,7 @@ int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string 
     data.session=id;
     switch(DB::deleteSession(data)){
         case DB::sessionNotFound:
-            Log::getLog(Log::warn,this,INFO_LOG)<<"sesion no encontrada"<<std::endl;
+        	Log::log(Log::warn,this,INFO_LOG,"sesion no encontrada");
             return 404;
     }
     auto &allocator=response.GetAllocator();
@@ -225,7 +225,7 @@ int RESTServer::databaseSessionDELETE(rapidjson::Document &response,std::string 
 int RESTServer::databaseSessionsGET(rapidjson::Document &response,std::unordered_map<std::string,std::string> &querys){
 	std::unordered_map<std::string,std::string>::iterator queryIterator=querys.find("value");
 	if(queryIterator==querys.end()){
-		Log::getLog(Log::warn,this,INFO_LOG)<<"value no encontrado"<<std::endl;
+		Log::log(Log::warn,this,INFO_LOG,"value no encontrado");
 		RESTServer::createMessageError(response,"query: value");
 		return 400;
 	}
@@ -252,7 +252,7 @@ int RESTServer::databaseSessionsGET(rapidjson::Document &response,std::unordered
 }
 
 int RESTServer::databaseSessionsCountGET(rapidjson::Document &response){
-	Log::getLog(Log::debug,this,INFO_LOG)<<"GET /database/sessions/count"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"GET /database/sessions/count");
 	auto &allocator=response.GetAllocator();
 	response.SetObject();
 	response.AddMember("count",DB::countSessions(),allocator);
@@ -262,7 +262,7 @@ int RESTServer::databaseSessionsCountGET(rapidjson::Document &response){
 
 RESTServer::RESTServer():
         AbstractServer(Config::getPort()){
-    Log::getLog(Log::info,this,INFO_LOG)<<"Iniciando servidor REST"<<std::endl;
+	Log::log(Log::info,this,INFO_LOG,"Iniciando servidor REST");
 }
 
 RESTServer::enumNodes RESTServer::getEnumNode(std::string node){
@@ -284,7 +284,7 @@ RESTServer::enumMethods RESTServer::getEnumMethod(std::string method){
 }
 
 bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::Request &request){
-    Log::getLog(Log::debug,this,INFO_LOG)<<"Conexion establecida"<<std::endl;
+	Log::log(Log::debug,this,INFO_LOG,"Conexion establecida");
     response.headers["Content-Type"]="application/json";
     response.code=404;
     std::vector<std::string> nodes=this->urlToNodes(request.url);
@@ -303,7 +303,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 									response.body=RESTServer::documentToString(responseDoc);
 								}break;
 								default:{
-									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
 									response.code=405;
 								}
 							}
@@ -315,7 +315,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 									response.code=200;
 								}break;
 								default:{
-									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
 									response.code=405;
 								}
 							}
@@ -327,7 +327,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 									response.code=200;
 								}break;
 								default:{
-									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
 									response.code=405;
 								}
 							}
@@ -340,7 +340,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 									response.body=RESTServer::documentToString(responseDoc);
 								}break;
 								default:{
-									Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+									Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
 									response.code=405;
 								}
 							}
@@ -373,7 +373,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
         							response.body=RESTServer::documentToString(responseDoc);
         						}break;
         						default:{
-        							Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+        							Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
         							response.code=405;
         						}
         					}
@@ -388,7 +388,7 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 											response.body=RESTServer::documentToString(responseDoc);
 										}break;
 										default:{
-											Log::getLog(Log::warn,this,INFO_LOG)<<"Metodo invalido"<<std::endl;
+											Log::log(Log::warn,this,INFO_LOG,"Metodo invalido");
 											response.code=405;
 										}
 									}

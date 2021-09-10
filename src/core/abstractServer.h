@@ -49,7 +49,7 @@
 
         public:
             //constructor
-            AbstractServer(unsigned short port);
+            AbstractServer(const unsigned short port);
             //destructor
             ~AbstractServer();
 

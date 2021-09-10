@@ -18,7 +18,7 @@ std::string DB::chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234
 DB::StaticClass DB::staticClass;
 
 DB::StaticClass::StaticClass(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Iniciando nucleo BD"<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"Iniciando nucleo BD");
     try{
         DB::datas=std::vector<DB::internalData>(Config::getSizeDB());
     }catch(std::exception &e){
@@ -56,7 +56,7 @@ size_t DB::pointerDeviceToPointer(DB::pointerDevice &pointerDevice){
 }
 
 DB::pointerDevice DB::getAndUpdatePostionTime(size_t expireTime,DB::status &status){
-    Log::getLog(Log::debug,INFO_LOG)<<"Opteniendo posicion de tiempo"<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Opteniendo posicion de tiempo");
     status=DB::ok;
     size_t epoch=Utils::getEpoch();
     bool run;
@@ -74,7 +74,7 @@ DB::pointerDevice DB::getAndUpdatePostionTime(size_t expireTime,DB::status &stat
         if(run){
             excludeDevice.insert(pointerDevice.device);
             if(excludeDevice.size()>=DB::openCl.size()){
-                Log::getLog(Log::info,INFO_LOG)<<"No se ha podido encontrar ningun tiempo libre"<<std::endl;
+            	Log::log(Log::info,INFO_LOG,"No se ha podido encontrar ningun tiempo libre");
                 status=DB::dbFull;
             }
         }
@@ -107,7 +107,7 @@ void DB::flush(const cl::CommandQueue &commandQueue){
 			commandQueue.flush();
 			run=false;
 		}catch (cl::Error &e) {
-			Log::getLog(Log::debug,INFO_LOG)<<"Error en clFlush: "<<e.err()<<std::endl;
+			Log::log(Log::debug,INFO_LOG,"Error en clFlush:",e.err());
 			if(e.err()!=CL_OUT_OF_RESOURCES){
 				throw e;
 			}
@@ -116,8 +116,8 @@ void DB::flush(const cl::CommandQueue &commandQueue){
 }
 
 DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::internalData&,DB::data&,std::string&,size_t),DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Buscando una sesion\n\tSesion: "<<data.session<<
-            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Buscando una sesion\n\tSesion:",data.session,
+            "\n\tUserAgent:",data.userAgent);
     size_t epoch=Utils::getEpoch();
     DB::status status=DB::sessionNotFound;
     std::string sessionExtended=data.session+data.userAgent;
@@ -167,7 +167,7 @@ DB::status DB::findSession(bool (*sessionCallBack)(DB::pointerDevice&,DB::intern
 }
 
 bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
-    Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Chequeando sesion");
     bool check=false;
     {//alcance para el mutex
     	std::shared_lock readLock(internalData.mutex);
@@ -184,12 +184,12 @@ bool DB::checkAndGetSession(DB::pointerDevice &pointerDevice,DB::internalData &i
         	}
         }
     }
-    Log::getLog(Log::debug,INFO_LOG)<<"Sesion valida: "<<check<<std::endl;
+    Log::log(Log::debug,INFO_LOG,"Sesion valida: ",check);
     return check;
 }
 
 bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
-    Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Chequeando sesion");
     bool check=false;
     {//alcance para el mutex
         std::unique_lock writeLock(internalData.mutex);
@@ -221,12 +221,12 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
 			}
         }
     }
-    Log::getLog(Log::debug,INFO_LOG)<<"Sesion modificada: "<<check<<std::endl;
+    Log::log(Log::debug,INFO_LOG,"Sesion modificada:",check);
     return check;
 }
 
 bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData &internalData,DB::data &data,std::string &sessionExtended,size_t epoch){
-    Log::getLog(Log::debug,INFO_LOG)<<"Chequeando sesion"<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Chequeando sesion");
     bool check=false;
     {//alcance para el mutex
         std::unique_lock writeLock(internalData.mutex);
@@ -247,14 +247,14 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
         	}
         }
     }
-    Log::getLog(Log::debug,INFO_LOG)<<"Sesion eliminada: "<<check<<std::endl;
+    Log::log(Log::debug,INFO_LOG,"Sesion eliminada:",check);
     return check;
 }
 
 DB::status DB::createSession(DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Creando una sesion\n\tValor: "<<data.value<<
-            "\n\tTiempo: "<<data.expireTime<<
-            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Creando una sesion\n\tValor:",data.value,
+            "\n\tTiempo:",data.expireTime,
+            "\n\tUserAgent:",data.userAgent);
     DB::status status;
     DB::pointerDevice pointerDevice=DB::getAndUpdatePostionTime(data.expireTime,status);
     if(status==DB::ok){
@@ -280,25 +280,25 @@ DB::status DB::createSession(DB::data &data){
 }
 
 DB::status DB::getSession(DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Opteniedo una sesion\n\tSesion: "<<data.session<<
-            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Opteniedo una sesion\n\tSesion:",data.session,
+            "\n\tUserAgent:",data.userAgent);
     return DB::findSession(DB::checkAndGetSession,data);
 }
 
 DB::status DB::patchSession(DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Modificando una sesion\n\tSesion: "<<data.session<<
-            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Modificando una sesion\n\tSesion:",data.session,
+            "\n\tUserAgent:",data.userAgent);
     return DB::findSession(DB::checkAndPatchSession,data);
 }
 
 DB::status DB::deleteSession(DB::data &data){
-    Log::getLog(Log::debug,INFO_LOG)<<"Eliminado una sesion\n\tSesion: "<<data.session<<
-            "\n\tUserAgent: "<<data.userAgent<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Eliminado una sesion\n\tSesion:",data.session,
+            "\n\tUserAgent:",data.userAgent);
     return DB::findSession(DB::checkAndDeleteSession,data);
 }
 
 size_t DB::countSessions(){
-	Log::getLog(Log::debug,INFO_LOG)<<"Contado el numero de sesiones"<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Contado el numero de sesiones");
 	size_t epoch=Utils::getEpoch();
 	std::vector<size_t> counts(DB::openCl.size());
 	std::vector<cl::Event> events(DB::openCl.size());
@@ -316,7 +316,7 @@ size_t DB::countSessions(){
 }
 
 std::vector<DB::data> DB::getValueSession(std::string regexStr){
-	Log::getLog(Log::debug,INFO_LOG)<<"Buscando sesiones con el valor: "<<regexStr<<std::endl;
+	Log::log(Log::debug,INFO_LOG,"Buscando sesiones con el valor:",regexStr);
 	std::vector<DB::data> datas;
 	size_t epoch=Utils::getEpoch();
 	std::regex regex(regexStr);

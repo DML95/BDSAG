@@ -13,7 +13,7 @@ std::string Config::logs;
 Config::StaticClass Config::staticClass;
 
 Config::StaticClass::StaticClass(){
-    Log::getLog(Log::trace,INFO_LOG)<<"Cargando configuaracion: config.lua"<<std::endl;
+    Log::log(Log::trace,INFO_LOG,"Cargando configuaracion: config.lua");
     std::string config=Utils::getDataFile("config.lua",true);
     Config::lua.setCode(config);
     Config::lua.pushGlobalName("main");
@@ -23,28 +23,28 @@ Config::StaticClass::StaticClass(){
     Config::lua.call(4);
     //sizeDB
     long long tempValue=Config::lua.getInteger(-4);
-    Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] sizeDB: "<<tempValue<<std::endl;
+    Log::log(Log::trace,INFO_LOG,"[config.lua:getConfig] sizeDB:",tempValue);
 	if(tempValue<=0){
 		throw Exception(0,"[config.lua:getConfig] sizeDB invalido",INFO_LOG);
 	}
 	Config::sizeDB=tempValue;
 	//sizeSesion
 	tempValue=Config::lua.getInteger(-3);
-	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] sizeSesion: "<<tempValue<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"[config.lua:getConfig] sizeSesion:",tempValue);
 	if(tempValue<=0){
 		throw Exception(0,"[config.lua:getConfig] sizeSesion invalido",INFO_LOG);
 	}
 	Config::sizeSesion=tempValue;
 	//port
 	tempValue=Config::lua.getInteger(-2);
-	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] port: "<<tempValue<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"[config.lua:getConfig] port:",tempValue);
 	if(tempValue<=0x0||tempValue>=0xffff){
 		throw Exception(0,"[config.lua:getConfig] port invalido",INFO_LOG);
 	}
 	Config::port=tempValue;
 	//logs
 	std::string stringTemp=Config::lua.getString(-1);
-	Log::getLog(Log::trace,INFO_LOG)<<"[config.lua:getConfig] logs: "<<stringTemp<<std::endl;
+	Log::log(Log::trace,INFO_LOG,"[config.lua:getConfig] logs:",stringTemp);
 	Log::setVisibility(stringTemp);
 	Config::logs=stringTemp;
 	Config::lua.pop();
@@ -58,7 +58,7 @@ bool Config::checkDeviceUse(std::string &platformName,std::string &deviceType,st
 	Config::lua.call(1);
 	bool ret=Config::lua.getBoolean(-1);
 	Config::lua.pop();
-	Log::getLog(Log::info,INFO_LOG)<<"[config.lua:checkDeviceUse] use: "<<ret<<std::endl;
+	Log::log(Log::info,INFO_LOG,"[config.lua:checkDeviceUse] use:",ret);
 	return ret;
 }
 
