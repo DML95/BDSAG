@@ -7,8 +7,6 @@
     #include<unordered_map>
 	#include<array>
 
-    #include"../utils/nullBuffer.h"
-
     #define INFO_LOG __PRETTY_FUNCTION__,__LINE__
 
     class Log{
@@ -30,11 +28,6 @@
             constexpr static std::array<const char*,8> typeStr={"","FATAL","ERROR","WARN","INFO","DEBUG","TRACE",""};
 
             static std::atomic_int typeValue;
-            static NullBuffer nullBuffer;
-            static std::ostream nullStream;
-
-            //devuelve un ostream dependiedo del tipo de log
-            static std::ostream& getOstream(Log::type type);
         public:
             //establece el nivel maximo a mostrar
             static void setVisibility(Log::type type);

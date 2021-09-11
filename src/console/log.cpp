@@ -19,13 +19,6 @@ std::atomic_int Log::typeValue(Log::all);
 
 //std::vector<std::string> Log::typeStr={"","FATAL","ERROR","WARN","INFO","DEBUG","TRACE",""};
 
-NullBuffer Log::nullBuffer;
-std::ostream Log::nullStream(&Log::nullBuffer);
-
-std::ostream& Log::getOstream(Log::type type){
-    return Log::typeValue.load()>=type?std::clog:Log::nullStream;
-}
-
 void Log::setVisibility(Log::type type){
     Log::typeValue.store(type);
 }
