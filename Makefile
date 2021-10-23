@@ -11,7 +11,7 @@ DIRDEP = dep
 
 PROGRAM=BDSAG
 LDLIBS=-lOpenCL -lmicrohttpd
-PRIORITY_FILES=src/console/log.cpp
+PRIORITY_FILES=src/utils/utils.cpp src/console/log.cpp
 
 ## LOGICA
 
