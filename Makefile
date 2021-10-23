@@ -1,8 +1,8 @@
 ## VARIABLES
 
 CXX=g++
-CXXFLAGS=-O3 -std=c++17 -Wall
-LDFLAGS=-static-libstdc++ -static-libgcc
+CXXFLAGS=-O3 -std=c++17 -Wall -pthread
+LDFLAGS=-static-libstdc++ -static-libgcc -pthread
 
 DIRSRC = src
 DIROBJ = obj
@@ -11,7 +11,7 @@ DIRDEP = dep
 
 PROGRAM=BDSAG
 LDLIBS=-lOpenCL -lmicrohttpd
-PRIORITY_FILES=src/console/log.cpp src/utils/utils.cpp
+PRIORITY_FILES=src/console/log.cpp
 
 ## LOGICA
 
@@ -102,5 +102,5 @@ $(DIROBJ)/%.o: $(DIRSRC)/%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) -I$(DIRSRC)
 
 #limpiamos los archivos antiguos
-clean: $(DIROBJ) $(DIRDEP) $(FILE_BIN)
-	$(call RM_OS,$^)
+clean:
+	$(call RM_OS,$(DIROBJ) $(DIRDEP) $(FILE_BIN))
