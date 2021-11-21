@@ -8,22 +8,6 @@
 
 #include"openCL.h"
 
-std::unordered_map<std::string,RESTServer::enumNodes> RESTServer::mapNodes={
-	{"database",RESTServer::database},
-	{"session",RESTServer::session},
-	{"config",RESTServer::config},
-	{"devices",RESTServer::devices},
-	{"sessions",RESTServer::sessions},
-	{"count",RESTServer::count},
-};
-
-std::unordered_map<std::string,RESTServer::enumMethods> RESTServer::mapMethods={
-	{"GET",RESTServer::get},
-	{"POST",RESTServer::post},
-	{"PATCH",RESTServer::patch},
-	{"DELETE",RESTServer::deleete},
-};
-
 std::vector<std::string> RESTServer::urlToNodes(std::string &url){
     size_t postion=0;
     size_t postionTemp=0;
@@ -265,19 +249,19 @@ RESTServer::RESTServer():
 	Log::log(Log::info,this,INFO_LOG,"Iniciando servidor REST");
 }
 
-RESTServer::enumNodes RESTServer::getEnumNode(std::string node){
-	auto iterator=RESTServer::mapNodes.find(node);
-	RESTServer::enumNodes enumNode=RESTServer::otherNode;
-	if (iterator!=RESTServer::mapNodes.end()){
+Constant::nodes RESTServer::getEnumNode(std::string node){
+	auto iterator=Constant::mapNodes.find(node);
+	Constant::nodes enumNode=Constant::otherNode;
+	if (iterator!=Constant::mapNodes.end()){
 		enumNode=iterator->second;
 	}
 	return enumNode;
 }
 
-RESTServer::enumMethods RESTServer::getEnumMethod(std::string method){
-	auto iterator=RESTServer::mapMethods.find(method);
-	RESTServer::enumMethods enumMethod=RESTServer::otherMethod;
-	if (iterator!=RESTServer::mapMethods.end()){
+Constant::methods RESTServer::getEnumMethod(std::string method){
+	auto iterator=Constant::mapMethods.find(method);
+	Constant::methods enumMethod=Constant::otherMethod;
+	if (iterator!=Constant::mapMethods.end()){
 		enumMethod=iterator->second;
 	}
 	return enumMethod;
@@ -291,11 +275,11 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
     switch(nodes.size()){
         case 2:{
         	switch(RESTServer::getEnumNode(nodes[0])){
-				case RESTServer::database:{
+				case Constant::database:{
 					switch(RESTServer::getEnumNode(nodes[1])){
-						case RESTServer::session:{
+						case Constant::session:{
 							switch(RESTServer::getEnumMethod(request.method)){
-								case RESTServer::post:{
+								case Constant::post:{
 									rapidjson::Document requestDoc;
 									requestDoc.Parse(request.body);
 									rapidjson::Document responseDoc;
@@ -308,9 +292,9 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 								}
 							}
 						}break;
-						case RESTServer::config:{
+						case Constant::config:{
 							switch(RESTServer::getEnumMethod(request.method)){
-								case RESTServer::get:{
+								case Constant::get:{
 									response.body=this->databaseConfigGET();
 									response.code=200;
 								}break;
@@ -320,9 +304,9 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 								}
 							}
 						}break;
-						case RESTServer::devices:{
+						case Constant::devices:{
 							switch(RESTServer::getEnumMethod(request.method)){
-								case RESTServer::get:{
+								case Constant::get:{
 									response.body=this->databaseDevicesGET();
 									response.code=200;
 								}break;
@@ -332,9 +316,9 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
 								}
 							}
 						}break;
-						case RESTServer::sessions:{
+						case Constant::sessions:{
 							switch(RESTServer::getEnumMethod(request.method)){
-								case RESTServer::get:{
+								case Constant::get:{
 									rapidjson::Document responseDoc;
 									response.code=this->databaseSessionsGET(responseDoc,request.querys);
 									response.body=RESTServer::documentToString(responseDoc);
@@ -351,23 +335,23 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
         }break;
         case 3:{
         	switch(RESTServer::getEnumNode(nodes[0])){
-        		case RESTServer::database:{
+        		case Constant::database:{
         			switch(RESTServer::getEnumNode(nodes[1])){
-        				case RESTServer::session:{
+        				case Constant::session:{
         					switch(RESTServer::getEnumMethod(request.method)){
-        						case RESTServer::get:{
+        						case Constant::get:{
         							rapidjson::Document responseDoc;
         							response.code=this->databaseSessionGET(responseDoc,nodes[2],request.headers);
         							response.body=RESTServer::documentToString(responseDoc);
         						}break;
-        						case RESTServer::patch:{
+        						case Constant::patch:{
         							rapidjson::Document requestDoc;
         							requestDoc.Parse(request.body);
         							rapidjson::Document responseDoc;
         							response.code=this->databaseSessionPATCH(responseDoc,requestDoc,nodes[2],request.headers);
         							response.body=RESTServer::documentToString(responseDoc);
         						}break;
-        						case RESTServer::deleete:{
+        						case Constant::deleete:{
         							rapidjson::Document responseDoc;
         							response.code=this->databaseSessionDELETE(responseDoc,nodes[2],request.headers);
         							response.body=RESTServer::documentToString(responseDoc);
@@ -378,11 +362,11 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
         						}
         					}
         				}break;
-        				case RESTServer::sessions:{
+        				case Constant::sessions:{
         					switch(RESTServer::getEnumNode(nodes[2])){
-								case RESTServer::count:{
+								case Constant::count:{
 									switch(RESTServer::getEnumMethod(request.method)){
-										case RESTServer::get:{
+										case Constant::get:{
 											rapidjson::Document responseDoc;
 											response.code=this->databaseSessionsCountGET(responseDoc);
 											response.body=RESTServer::documentToString(responseDoc);

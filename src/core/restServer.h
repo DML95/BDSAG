@@ -3,33 +3,13 @@
 
     #include"abstractServer.h"
     #include"../apiRapidjson.h"
+	#include"../utils/constant.h"
 
     #include<vector>
     #include<exception>
 
     class RESTServer: public AbstractServer{
         private:
-
-    		enum enumNodes{
-    			otherNode=-1,
-    			database,
-				session,
-				config,
-				devices,
-				sessions,
-				count,
-    		};
-
-    		enum enumMethods{
-    			otherMethod=-1,
-    			get,
-				post,
-				patch,
-				deleete,
-    		};
-
-    		static std::unordered_map<std::string,RESTServer::enumNodes> mapNodes;
-    		static std::unordered_map<std::string,RESTServer::enumMethods> mapMethods;
 
             //extrae los nodos de una URL
             std::vector<std::string> urlToNodes(std::string &url);
@@ -62,9 +42,9 @@
             //crea un json de error
             static void createMessageError(rapidjson::Document &document,std::string error);
             //devuelve el nodo en caso de no encontrarlo -1
-            static RESTServer::enumNodes getEnumNode(std::string node);
+            static Constant::nodes getEnumNode(std::string node);
             //devuelve el metodo en caso de no encontrarlo -1
-            static RESTServer::enumMethods getEnumMethod(std::string method);
+            static Constant::methods getEnumMethod(std::string method);
         protected:
             //impementacion de AbstractServer
             bool connection(AbstractServer::Response &response,AbstractServer::Request &request);

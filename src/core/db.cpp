@@ -210,6 +210,8 @@ bool DB::checkAndPatchSession(DB::pointerDevice &pointerDevice,DB::internalData 
 				if(check){
 					if(data.updateExpireTime){
 						data.expireTime=internalData.expireTime=expireTime;
+					}else{
+						data.expireTime=internalData.expireTime;
 					}
 					//se actualiza el valor de la sesion o se devuelve el antiguo valor
 					if(data.updateValue){
@@ -241,9 +243,11 @@ bool DB::checkAndDeleteSession(DB::pointerDevice &pointerDevice,DB::internalData
 				data.expireTime=internalData.expireTime;
 				//se pone a 0 el tiempo de la sesion
 				deviceTime=0;
-				internalData.expireTime=deviceTime;
 				pointerDevice.device->checkAndSetExpireTime(deviceTime,internalData.expireTime,pointerDevice.pointer).wait();
 				check=deviceTime;
+				if(check){
+					internalData.expireTime=0;
+				}
         	}
         }
     }
