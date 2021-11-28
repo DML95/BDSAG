@@ -53,7 +53,7 @@ $(info LDLIBS = $(LDLIBS))
 $(info FILE_BIN = $(FILE_BIN))
 
 #listamos los archivos de codigo
-SRCS = $(wildcard $(DIRSRC)/*.cpp $(DIRSRC)/*/*.cpp)
+SRCS = $(wildcard $(DIRSRC)/*.cpp $(DIRSRC)/*/*.cpp $(DIRSRC)/*/*/*.cpp)
 $(info SRCS sin prorizar = $(SRCS))
 
 #chequeamos que los archivos a prorizar existan
