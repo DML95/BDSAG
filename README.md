@@ -245,7 +245,7 @@ Devuelve la telemetria de las operaciones
       | operations[] | Array |  | Operaciones usadas por la base de datos |
       | operations[].method | String |  | Metodo de la operacion |
       | operations[].path | String |  | Ruta de la operacion |
-      | operations[].callspersecond | Integer | Llamadas por segundo a la operacion |
+      | operations[].callspersecond | Integer |  | Llamadas por segundo a la operacion |
 
 ###### Requistos
 
