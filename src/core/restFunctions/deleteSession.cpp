@@ -3,7 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
-//DELETE /database/session/{id}
+DeleteSession::DeleteSession():
+	RESTFunctionCommun("DELETE", "/database/session/{id}"){
+
+}
+
 bool DeleteSession::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::deleete)return false;
 	if(nodes.size()!=3)return false;

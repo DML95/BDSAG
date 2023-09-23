@@ -25,6 +25,7 @@
 				devices,
 				sessions,
 				count,
+				telemetry,
 			};
 
 			static std::unordered_map<std::string,nodes> mapNodes;

@@ -51,7 +51,7 @@
             //constructor
             AbstractServer(const unsigned short port);
             //destructor
-            ~AbstractServer();
+            virtual ~AbstractServer();
 
     };
 

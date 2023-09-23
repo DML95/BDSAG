@@ -6,6 +6,8 @@
 	//busca una sesion
 	class GetSession: public RESTFunctionCommun {
 		public:
+			GetSession();
+
 			bool filter(Constant::methods method,const std::vector<Constant::nodes> &nodes);
 			int operation(Response &response,const Request &request);
 	};

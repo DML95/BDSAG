@@ -3,7 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
-//POST /database/session
+CreateSession::CreateSession():
+	RESTFunctionCommun("POST", "/database/session"){
+
+}
+
 bool CreateSession::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::post)return false;
 	if(nodes.size()!=2)return false;

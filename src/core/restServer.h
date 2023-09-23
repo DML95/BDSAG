@@ -1,6 +1,9 @@
 #ifndef RESTSERVER_H_INCLUDED
 #define RESTSERVER_H_INCLUDED
 
+	//dependencia circular
+	class RESTFunctionCommun;
+
     #include"abstractServer.h"
     #include"../apiRapidjson.h"
 	#include"../utils/constant.h"
@@ -29,6 +32,10 @@
         public:
             //constructor
             RESTServer(const std::vector<std::shared_ptr<RESTFunctionCommun> > &functions);
+            //destructor
+            virtual ~RESTServer();
+
+            std::vector<std::shared_ptr<RESTFunctionCommun> >& getFunctions();
 
     };
 

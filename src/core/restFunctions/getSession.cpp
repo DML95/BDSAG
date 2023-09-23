@@ -3,6 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
+GetSession::GetSession():
+	RESTFunctionCommun("GET", "/database/session/{id}"){
+
+}
+
 //GET /database/session/{id}
 bool GetSession::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::get)return false;

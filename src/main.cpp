@@ -17,6 +17,7 @@
 #include"core/restFunctions/getSession.h"
 #include"core/restFunctions/getSessions.h"
 #include"core/restFunctions/updateSession.h"
+#include"core/restFunctions/getTelemetry.h"
 
 #include"apiOS.h"
 
@@ -39,6 +40,7 @@ static std::vector<std::shared_ptr<RESTFunctionCommun> > loadFunctions(){
 	functions.push_back(std::make_shared<CountSessions>());
 	functions.push_back(std::make_shared<GetConfig>());
 	functions.push_back(std::make_shared<GetDevices>());
+	functions.push_back(std::make_shared<GetTelemetry>());
 	return functions;
 }
 

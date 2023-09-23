@@ -4,7 +4,11 @@
 #include"../../utils/utils.h"
 #include"../../utils/config.h"
 
-//GET /database/sessions/count
+CountSessions::CountSessions():
+	RESTFunctionCommun("GET", "/database/sessions/count"){
+
+}
+
 bool CountSessions::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::get)return false;
 	if(nodes.size()!=3)return false;

@@ -41,6 +41,18 @@ RESTServer::RESTServer(const std::vector<std::shared_ptr<RESTFunctionCommun> > &
 		functions(functions),
         AbstractServer(Config::getPort()){
 	Log::log(Log::info,this,INFO_LOG,"Iniciando servidor REST");
+	for(std::shared_ptr<RESTFunctionCommun> function:functions){
+		Log::log(Log::trace,this,INFO_LOG,"Iniciando modulo REST:",function->getMethod(),function->getPath());
+		function->init(*this);
+	}
+}
+
+RESTServer::~RESTServer(){
+	Log::log(Log::info,this,INFO_LOG,"Apagando servidor REST");
+	for(std::shared_ptr<RESTFunctionCommun> function:functions){
+		Log::log(Log::trace,this,INFO_LOG,"Finalizando modulo REST:",function->getMethod(),function->getPath());
+		function->end();
+	}
 }
 
 Constant::nodes RESTServer::getEnumNode(const std::string &node){
@@ -86,10 +98,15 @@ bool RESTServer::connection(AbstractServer::Response &response,AbstractServer::R
     		responseREST.headers=&response.headers;
     		rapidjson::Document responseJson;
     		responseREST.json=&responseJson;
-    		response.code=function->operation(responseREST, requestREST);
+    		response.code=function->operationAndTelemetry(responseREST, requestREST);
     		response.body=RESTServer::documentToString(responseJson);
+    		break;
     	}
     }
     return true;
+}
+
+std::vector<std::shared_ptr<RESTFunctionCommun> >& RESTServer::getFunctions(){
+	return this->functions;
 }
 

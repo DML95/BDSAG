@@ -19,12 +19,12 @@ Script LUA de configuaracion de la base de datos
 
     - Retorno
 
-      | Posicion | Obligatorio | Tipo | Valores | Description |
-      | --- | --- | --- | --- | --- |
-      | 1 | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
-      | 2 | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
-      | 3 | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
-      | 4 | :white_check_mark: | String (Enum) | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
+		| Posicion | Obligatorio | Tipo | Valores | Description |
+		| --- | --- | --- | --- | --- |
+		| 1 | :white_check_mark: | Long | Mayores que 0 | Usuarios reservados en la base de datos |
+		| 2 | :white_check_mark: | Long | Mayores que 0 | Numero de caracteres de la sesion |
+		| 3 | :white_check_mark: | Long | Entre 0 y 65535 | Puerto del servidor REST |
+		| 4 | :white_check_mark: | String (Enum) | NONE, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL | Visibilidad de los logs |
 
   - boolean checkDeviceUse(platformName,deviceType,deviceName)
 
@@ -32,17 +32,17 @@ Script LUA de configuaracion de la base de datos
 
     - Parametros
 
-      | Parametro | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
-	  | platformName | String |  | Nombre de la plataforma |
-	  | deviceType | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
-	  | deviceName | String |  | Nombre del dispostivo |
+		| Parametro | Tipo | Valores | Description |
+		| --- | --- | --- | --- |
+		| platformName | String |  | Nombre de la plataforma |
+		| deviceType | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipositivo |
+		| deviceName | String |  | Nombre del dispostivo |
 
     - Retorno
 
-      | Posicion | Obligatorio | Tipo | Valores | Description |
-      | --- | --- | --- | --- | --- |
-      | 1 | :white_check_mark: | Boolean |  | Devuelve si quiere que el dispositivo sea usado |
+		| Posicion | Obligatorio | Tipo | Valores | Description |
+		| --- | --- | --- | --- | --- |
+		| 1 | :white_check_mark: | Boolean |  | Devuelve si quiere que el dispositivo sea usado |
 
 ###### GET [HOST]/database/config
 
@@ -52,12 +52,12 @@ Devuelve la configuracion con la que se inicio la base de datos
   - 200 OK
     - Body
 
-	  | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
-      | sizeDB | Long |  | Usuarios reservados en la base de datos |
-      | sizeSesion | Long |  | Numero de caracteres de la sesion |
-      | port | Long |  | Puerto del servidor REST |
-      | logs | String (Enum) | FATAL, ERROR, WARN, INFO, DEBUG, TRACE | Visibilidad de los logs |
+		| Clave | Tipo | Valores | Description |
+		| --- | --- | --- | --- |
+		| sizeDB | Long |  | Usuarios reservados en la base de datos |
+		| sizeSesion | Long |  | Numero de caracteres de la sesion |
+		| port | Long |  | Puerto del servidor REST |
+		| logs | String (Enum) | FATAL, ERROR, WARN, INFO, DEBUG, TRACE | Visibilidad de los logs |
 
 ###### GET [HOST]/database/devices
 
@@ -67,13 +67,13 @@ Devuelve los dispostivos usados por la base de datos
   - 200 OK
     - Body
 
-	  | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
-      | devices[] | Array |  | Dispostivos usados por la base de datos |
-      | devices[].platform | String |  | Plataforma del dipostivo |
-      | devices[].name | String |  | Nombre del dipostivo |
-      | devices[].type | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipostivo |
-      | devices[].reservedsessions | Long |  | Numero de sesiones reservadas en el dipostivo |
+		| Clave | Tipo | Valores | Description |
+		| --- | --- | --- | --- |
+		| devices[] | Array |  | Dispostivos usados por la base de datos |
+		| devices[].platform | String |  | Plataforma del dipostivo |
+		| devices[].name | String |  | Nombre del dipostivo |
+		| devices[].type | String (Enum) | DEFAULT, CPU, GPU, ACCELERATOR, CUSTOM | Tipo de dipostivo |
+		| devices[].reservedsessions | Long |  | Numero de sesiones reservadas en el dipostivo |
 
 ###### POST [HOST]/database/session
 
@@ -82,25 +82,25 @@ Crea una sesion
 - Entrada
   - Header
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
   - Body
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | expiretime | :white_check_mark: | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
-    | value | :white_check_mark: | String |  | Valor que se le asigna a la sesion |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| expiretime | :white_check_mark: | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
+	| value | :white_check_mark: | String |  | Valor que se le asigna a la sesion |
 
 - Salida
   - 201 Created
     - Body
       
-	  | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
-      | id | String |  | Identificador de la sesion |
-      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
+		| Clave | Tipo | Valores | Description |
+		| --- | --- | --- | --- |
+		| id | String |  | Identificador de la sesion |
+		| expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
 	  
   - 507 Insufficient Storage
 
@@ -111,22 +111,22 @@ Busca una sesion por un identificador
 - Entrada
   - Path
   
-    | Clave | Tipo | Valores | Description |
-    | --- | --- | --- | --- |
-    | id | String |  | Identificador de la sesion |
+	| Clave | Tipo | Valores | Description |
+	| --- | --- | --- | --- |
+	| id | String |  | Identificador de la sesion |
   
   - Header
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
 - Salida
   - 200 OK
     - Body
 	
       | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
+      | --- | --- | --- | --- |
       | value | String |  | Valor de la sesion |
       | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
   
@@ -139,25 +139,25 @@ Modifica una sesion
 - Entrada
   - Header
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| User-Agent |  :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
   - Body
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | expiretime |  | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
-    | value |  | String |  | Valor que se le asigna a la sesion |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| expiretime |  | Long | Mayores que 0 | Tiempo en segundos para que caduque la sesion |
+	| value |  | String |  | Valor que se le asigna a la sesion |
 
 - Salida
   - 200 OK
     - Body
       
-	  | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
-      | value | String |  | Valor de la sesion |
-      | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
+		| Clave | Tipo | Valores | Description |
+		| --- | --- | --- | --- |
+		| value | String |  | Valor de la sesion |
+		| expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
 	  
   - 404 Not Found
 
@@ -168,22 +168,22 @@ Elimina una sesion por un identificador
 - Entrada
   - Path
   
-    | Clave | Tipo | Valores | Description |
-    | --- | --- | --- | --- |
-    | id | String |  | Identificador de la sesion |
+	| Clave | Tipo | Valores | Description |
+	| --- | --- | --- | --- |
+	| id | String |  | Identificador de la sesion |
   
   - Header
 
-    | Clave | Obligatorio | Tipo | Valores | Description |
-    | --- | --- | --- | --- | --- |
-    | User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
+	| Clave | Obligatorio | Tipo | Valores | Description |
+	| --- | --- | --- | --- | --- |
+	| User-Agent | :white_check_mark: | String |  | User-Agent del navegador del usuario usado para aumentar la seguridad |
 
 - Salida
   - 200 OK
     - Body
 	
       | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
+      | --- | --- | --- | --- |
       | value | String |  | Valor de la sesion |
       | expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
   
@@ -221,7 +221,7 @@ Devuelve las sesiones que su valor corresponda con la expresion regular
     - Body
 
       | Clave | Tipo | Valores | Description |
-	  | --- | --- | --- | --- |
+      | --- | --- | --- | --- |
       | sessions[] | Array |  | Sesiones conicidentes con la espresion regular |
       | sessions[].id | String |  | Identificador de la sesion |
       | sessions[].expireepoch | Long |  | Tiempo Epoch en segundos en el que expira la sesion |
@@ -229,6 +229,23 @@ Devuelve las sesiones que su valor corresponda con la expresion regular
       | sessions[].value | String |  | Valor que se le ha asignado a la sesion |
   
   - 204 No Content
+  
+###### GET [HOST]/database/telemetry
+
+Devuelve la telemetria de las operaciones
+
+- Entrada
+
+- Salida
+  - 200 OK
+    - Body
+
+      | Clave | Tipo | Valores | Description |
+      | --- | --- | --- | --- |
+      | operations[] | Array |  | Operaciones usadas por la base de datos |
+      | operations[].method | String |  | Metodo de la operacion |
+      | operations[].path | String |  | Ruta de la operacion |
+      | operations[].callspersecond | Integer | Llamadas por segundo a la operacion |
 
 ###### Requistos
 

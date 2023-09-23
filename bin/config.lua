@@ -7,7 +7,7 @@ function getConfig()
 	return 1000000,		--sizeDB
 		100, 			--sizeSesion
 		8080,			--port
-		"INFO"			--logs
+		"TRACE"			--logs
 end
 
 function checkDeviceUse(platformName,deviceType,deviceName)

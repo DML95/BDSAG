@@ -3,7 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
-//GET /database/devices
+GetDevices::GetDevices():
+	RESTFunctionCommun("GET", "/database/devices"){
+
+}
+
 bool GetDevices::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::get)return false;
 	if(nodes.size()!=2)return false;

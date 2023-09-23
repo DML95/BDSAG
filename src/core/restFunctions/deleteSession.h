@@ -6,6 +6,8 @@
 	//elimina una sesion
 	class DeleteSession: public RESTFunctionCommun {
 		public:
+			DeleteSession();
+
 			bool filter(Constant::methods method,const std::vector<Constant::nodes> &nodes);
 			int operation(Response &response,const Request &request);
 	};

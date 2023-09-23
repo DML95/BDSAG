@@ -3,6 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
+UpdateSession::UpdateSession():
+	RESTFunctionCommun("PATCH", "/database/session/{id}"){
+
+}
+
 //PATCH /database/session/{id}
 bool UpdateSession::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::patch)return false;

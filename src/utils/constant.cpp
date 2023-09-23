@@ -14,4 +14,5 @@ std::unordered_map<std::string,Constant::nodes> Constant::mapNodes={
 	{"devices",devices},
 	{"sessions",sessions},
 	{"count",count},
+	{"telemetry",telemetry},
 };

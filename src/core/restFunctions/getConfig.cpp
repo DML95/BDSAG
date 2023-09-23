@@ -2,7 +2,11 @@
 
 #include"../../utils/config.h"
 
-//GET /database/config
+GetConfig::GetConfig():
+	RESTFunctionCommun("GET", "/database/config"){
+
+}
+
 bool GetConfig::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::get)return false;
 	if(nodes.size()!=2)return false;

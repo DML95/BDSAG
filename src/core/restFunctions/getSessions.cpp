@@ -3,7 +3,11 @@
 #include"../db.h"
 #include"../../utils/utils.h"
 
-//GET /database/sessions?value={regex}
+GetSessions::GetSessions():
+	RESTFunctionCommun("GET", "/database/sessions?value={regex}"){
+
+}
+
 bool GetSessions::filter(Constant::methods method,const std::vector<Constant::nodes> &nodes) {
 	if(method!=Constant::get)return false;
 	if(nodes.size()!=2)return false;

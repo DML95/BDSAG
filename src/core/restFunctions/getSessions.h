@@ -6,6 +6,8 @@
 	//devuelve las sesiones que su valor corresponda con la expresion regular
 	class GetSessions: public RESTFunctionCommun {
 		public:
+			GetSessions();
+
 			bool filter(Constant::methods method,const std::vector<Constant::nodes> &nodes);
 			int operation(Response &response,const Request &request);
 	};
